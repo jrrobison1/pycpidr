@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "python-cpidr"
 version = "0.1.0"
-description = ""
-authors = ["Jason Robison <jrrobison1@hoodsen.me>"]
+description = "Python port of the CPIDR 3.2 idea density rater. "
+authors = ["Jason Robison <jrrobison@protonmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-
+nltk = "^3.8.2"
 
 [build-system]
 requires = ["poetry-core"]

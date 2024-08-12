@@ -1,15 +1,19 @@
-import nltk
-from nltk.tokenize import word_tokenize
-from nltk.tag import pos_tag
+import spacy
 
-nltk.download('punkt')
-nltk.download("punkt_tab")
-nltk.download('averaged_perceptron_tagger_eng')
+_nlp = None
 
-def tag_text(text):
-    tokens = word_tokenize(text)
-    tagged_tokens = pos_tag(tokens)
-    
+
+def get_nlp():
+    global _nlp
+    if _nlp is None:
+        _nlp = spacy.load("en_core_web_sm")
+    return _nlp
+
+
+def tag_text(text, nlp=get_nlp()):
+    _nlp = nlp
+
+    doc = _nlp(text)
+    tagged_tokens = [(token.text, token.tag_) for token in doc]
+
     return tagged_tokens
-
-

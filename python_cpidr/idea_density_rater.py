@@ -20,11 +20,4 @@ def rate_text(text: str, speech_mode: bool = False) -> WordList:
 
     density = pc / wc
 
-    print(f"Word count: {wc}, prop count: {pc}, density: {density}")
-    print(f"Word list:")
-    for word in word_list.items:
-        print(
-            f"Token: [{word.token}], tag: [{word.tag}], is_word: [{word.is_word}], is_prop: [{word.is_prop}], rule_number: [{word.rule_number}]"
-        )
-
     return wc, pc, density, word_list

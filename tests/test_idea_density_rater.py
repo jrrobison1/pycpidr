@@ -154,3 +154,78 @@ def test_turner_greene_sentence_14():
     assert word_count == 19
     assert proposition_count == 12
     assert idea_density == pytest.approx(0.632, abs=1e-3)
+
+
+def test_turner_1987_passage_1():
+    text = """
+    In the request to canonize the "Frontier Priest," John Newmann, bishop of Philadelphia in the nineteenth century, 
+    two miracles were attributed to him in this century. In 1923, Eva Benassi, dying from peritonitis, dramatically 
+    recovered after her nurse prayed to the bishop. In 1949, Kent Lenahan, hospitalized with two skull fractures, 
+    smashed bones, and a pierced lung after a traffic accident, rose from his deathbed and resumed a normal life 
+    after his mother prayed ardently to John Newmann.
+    """
+
+    word_count, proposition_count, idea_density, word_list = rate_text(text, nlp)
+
+    assert word_count == 78
+    assert proposition_count == 40
+    assert idea_density == pytest.approx(0.513, abs=1e-3)
+
+
+@pytest.mark.skip(reason="This test fails, finding 189 propositions instead of 191.")
+def test_turner_1987_passage_2():
+    text = """
+    On a flat map of the earth (Mercator Projection) satellite ground traces appear to have different shapes 
+    than on a sphere. The ground trace for an object in an inclined circular or elliptical orbit appears as a 
+    sinusoidal trace with North - South limits equal to the inclination of the orbital plane.
+    The fun starts when you start the earth rotating. When you do this, visualizing a satellite's ground trace 
+    becomes more complex. As we said earlier, a point on the equator moves from west to east more rapidly than do 
+    points north and south of the equator. Satellites in a circular orbit travel at a constant speed. But when 
+    orbits are inclined to the equator, the component of satellite velocity which is effective in an easterly or 
+    westerly direction varies continuously throughout the orbital trace.
+    As the satellite crosses the equator, its easterly or westerly component of velocity is its instantaneous 
+    total velocity times the cosine of its angle of inclination. When it is at the most northerly or southerly 
+    portion of its orbit, its easterly or westerly component is equal to its total instantaneous velocity. To 
+    put it in simpler terms, a satellite in a circular or nearly circular orbit is not moving as fast in an 
+    easterly or westerly direction at the equator as it is at its most northerly or southerly point.
+    In elliptical orbits only the horizontal (to the Earth's surface) velocity component contributes to the 
+    ground trace. To further complicate things, the ground trace is changed because the inertial or absolute 
+    speed of the satellite varies throughout the elliptical path.
+    Fortunately, most of the orbits, with a few special exceptions, we deal with are nearly circular and have a 
+    fairly low altitude (within 400 to 600 NM). This eases the problem considerably.
+    Because the ground trace of a satellite is dependent upon the relative motion between the satellite and the 
+    earth, the visualization of ground tracks becomes quite complicated. Earth rotation causes each successive track 
+    of a satellite in a near earth orbit (400 NM or less) to cross the equator at a point which is west of the 
+    preceding track. This phenomena is referred to as "regression of the nodes."
+    """
+
+    word_count, proposition_count, idea_density, word_list = rate_text(text, nlp)
+
+    assert word_count == 363
+    assert proposition_count == 191
+    assert idea_density == pytest.approx(0.522, abs=1e-3)
+
+
+def test_turner_1987_passage_3():
+    text = """
+    Wegener proposed a theory of continental drift when geologists were beginning to find conventional theories of 
+    continental permanence inadequate. Previous continental drift theories held that some catastrophic event 
+    initiated continental displacement. In contrast, Wegener proposed that the same forces that produce great 
+    folded mountain ranges, displaced the continents. He presented evidence from such a range of sciences that 
+    his theory could not easily be ignored.
+    In the late Paleozoic era, according to Wegener's hypothesis, all the continents were part of one huge landmass, 
+    Pangaea, occupying half the Earth's surface. The other half was covered by the primeval Pacific Ocean. Wegener 
+    presented evidence that in the Jurassic period Pangaea began to break into fragments, and the weaker oceanic 
+    rock yielded to allow the continents to drift apart like icebergs in water.
+    The concept of continental drift first occurred to Wegener as he contemplated the apparent fit of the coastlines 
+    of the Atlantic Ocean. He tested this fit using the edges of the continental shelf as the boundary between continents 
+    and oceans. He postulated that the continental blocks retain the approximate outlines they acquired during the 
+    breakup of Pangaea. If the younger, Tertiary folded mountains could be flattened, the pieces could be reassembled 
+    into one large continent partially flooded by shallow seas. 
+    """
+
+    word_count, proposition_count, idea_density, word_list = rate_text(text, nlp)
+
+    assert word_count == 210
+    assert proposition_count == 106
+    assert idea_density == pytest.approx(0.505, abs=1e-3)

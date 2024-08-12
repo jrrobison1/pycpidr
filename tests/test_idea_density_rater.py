@@ -14,7 +14,7 @@ Total Actual found in thiss python port:
 import pytest
 
 import spacy
-from python_cpidr.idea_density_rater import rate_text
+from pycpidr.idea_density_rater import rate_text
 
 
 nlp = spacy.load("en_core_web_sm")

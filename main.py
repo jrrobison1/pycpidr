@@ -1,5 +1,5 @@
 import sys
-from python_cpidr.idea_density_rater import rate_text
+from pycpidr.idea_density_rater import rate_text
 
 
 def main(text):

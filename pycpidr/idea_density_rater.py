@@ -1,7 +1,7 @@
 from typing import List, Tuple
-from python_cpidr.idea_density_rater_rules import apply_idea_counting_rules
-from python_cpidr.tagger import tag_text
-from python_cpidr.word_item import WordList
+from pycpidr.idea_density_rater_rules import apply_idea_counting_rules
+from pycpidr.tagger import tag_text
+from pycpidr.word_item import WordList
 
 
 def rate_text(text: str, speech_mode: bool = False) -> WordList:

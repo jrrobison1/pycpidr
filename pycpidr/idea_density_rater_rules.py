@@ -1,6 +1,6 @@
 import logging
 from typing import List
-from python_cpidr.word_item import WordListItem
+from pycpidr.word_item import WordListItem
 
 logger = logging.getLogger(__name__)
 

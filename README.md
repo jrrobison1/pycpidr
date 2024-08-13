@@ -1,13 +1,24 @@
 # PyCPIDR
-Python library port of the Computerized Propositional Idea Density Rate (CPIDR) 3.2.
+Python library port of the Computerized Propositional Idea Density Rater (CPIDR) 3.2.
 
 PyCPIDR is a Python library that determines the propositional idea density of an English text automatically.
 
-CPIDR 3.2 is a computer program with source code released under the GPL v2 in 2007. It was written by Michael Covington and was a product of the CASPR project (Computer Analysis of Speech for Psychological Research) at The University of Georgia.
+The original CPIDR 3.2 is a computer program with source code released under the GPL v2 in 2007. It was written by Michael Covington and was a product of the CASPR project (Computer Analysis of Speech for Psychological Research) at The University of Georgia.
 
-I have ported that code to Python for use as a library. I have also added unit tests based on passages provided by Turner and Green (1977) and Turner (1987).
+I have ported that code to Python for use as a library. I switched the part-of-speech tagger from MontyLingua to spaCy. I have also added unit tests based on passages provided by Turner and Green (1977) and Turner (1987).
 
-# Authorship and version history 
+## Installation
+
+
+## Usage
+
+
+## Parity with CPIDR 3.2
+Because this port uses spaCy as a part-of-speech tagger instead of the original program's MontyLingua, there is a very slight difference in the reported idea density. This port includes unit tests containing 847 words of text.
+This project: 434 propositions. 0.512 idea density
+CPIDR 3.2: 436 propositions. 0.515 idea density
+
+## Authorship and version history 
 The name CPIDR has been applied to several programs: 
 - A prototype idea density rater implemented in Prolog by Cati Brown; 
 - A Java program implemented by Tony Snodgrass, using a somewhat more 
@@ -17,8 +28,7 @@ rule set (CPIDR 2);
 - The C# program coded by Michael A. Covington, using a 
 considerably refined rule set (CPIDR 3), described further by Brown et al. 
 (in preparation). 
-- This Python library port by Jason Robison of Covington's C# code.
-
+- This Python library port by Jason Robison.
 
 ## License
 As the original code was GPL v2, this port is as well.

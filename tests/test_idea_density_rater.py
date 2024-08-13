@@ -242,3 +242,23 @@ def test_turner_1987_passage_3():
     assert word_count == 210
     assert proposition_count == 106
     assert idea_density == pytest.approx(0.505, abs=1e-3)
+
+
+def test_empty_text():
+    text = ""
+
+    word_count, proposition_count, idea_density, word_list = rate_text(text, nlp)
+
+    assert word_count == 0
+    assert proposition_count == 0
+    assert idea_density == pytest.approx(0.0, abs=1e-3)
+
+
+def test_empty_text():
+    text = None
+
+    word_count, proposition_count, idea_density, word_list = rate_text(text, nlp)
+
+    assert word_count == 0
+    assert proposition_count == 0
+    assert idea_density == pytest.approx(0.0, abs=1e-3)

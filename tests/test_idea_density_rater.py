@@ -280,3 +280,22 @@ def test_one_word():
     assert word_count == 1
     assert proposition_count == 1
     assert idea_density == pytest.approx(1.0, abs=1e-3)
+
+def test_fraction():
+    text = "This is a sentence with 1 / 2 of a fraction."
+
+    word_count, proposition_count, idea_density, word_list = rate_text(text, nlp)
+
+    assert word_count == 9
+    assert proposition_count == 5
+    assert idea_density == pytest.approx(0.556, abs=1e-3)
+
+def test_one_number():
+    text = "4"
+
+    word_count, proposition_count, idea_density, word_list = rate_text(text, nlp)
+
+    assert word_count == 1
+    assert proposition_count == 0
+    assert idea_density == pytest.approx(0.0, abs=1e-3)
+

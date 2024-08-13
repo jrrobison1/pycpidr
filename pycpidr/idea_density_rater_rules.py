@@ -262,8 +262,10 @@ def apply_idea_counting_rules(b: List[WordListItem], speech_mode: bool) -> None:
     # the idea count. Accordingly, items should only be deleted if they've
     # been moved or should not be counted as words.
     #
-    for i in range(len(b)):
-        logger.debug(f"{i} {b[i].token}/{b[i].tag}")
+    i = 0
+    while i < len(b):
+        print(f"i equals {i}")
+        # logger.debug(f"{i} {b[i].token}/{b[i].tag}")
 
         # Rule group 000 - Identify words and adjust tags
 
@@ -273,6 +275,7 @@ def apply_idea_counting_rules(b: List[WordListItem], speech_mode: bool) -> None:
         # so we can freely look back from the current position
         # without running off the beginning of the list.
         if b[i].token == "":
+            i += 1
             continue
 
         # 001
@@ -706,3 +709,4 @@ def apply_idea_counting_rules(b: List[WordListItem], speech_mode: bool) -> None:
                 b[i].is_prop = False
                 b[i].is_word = True
                 b[i].rule_number = 634
+        i += 1

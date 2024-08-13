@@ -49,13 +49,7 @@ class WordList:
         If tagged_text is empty, initializes with 10 empty WordListItems.
         Otherwise, creates a WordListItem for each word in the tagged text.
         """
-        self.items = []
-        word_list_item = WordListItem("", "", False, False, 0)
-
-        if not tagged_text:
-            for i in range(10):
-                self.items.append(word_list_item)
-
+        self.items = [WordListItem()] * 10
         for tagged_word in tagged_text:
             self.items.append(
                 WordListItem(tagged_word[0], tagged_word[1], False, False, 0)

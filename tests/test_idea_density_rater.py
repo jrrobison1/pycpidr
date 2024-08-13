@@ -262,3 +262,21 @@ def test_empty_text():
     assert word_count == 0
     assert proposition_count == 0
     assert idea_density == pytest.approx(0.0, abs=1e-3)
+
+def test_two_numbers():
+    text = "This is 1 2 a sentence with numbers."
+
+    word_count, proposition_count, idea_density, word_list = rate_text(text, nlp)
+
+    assert word_count == 7
+    assert proposition_count == 4
+    assert idea_density == pytest.approx(0.571, abs=1e-3)
+
+def test_one_word():
+    text = "Are"
+
+    word_count, proposition_count, idea_density, word_list = rate_text(text, nlp)
+
+    assert word_count == 1
+    assert proposition_count == 1
+    assert idea_density == pytest.approx(1.0, abs=1e-3)

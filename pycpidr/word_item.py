@@ -18,14 +18,15 @@ class WordListItem:
         token: str = "",
         tag: str = "",
         is_word: bool = False,
-        is_prop: bool = False,
+        is_proposition: bool = False,
         rule_number: int = 0,
     ):
         self.token = token
         self.tag = tag
         self.is_word = is_word
-        self.is_prop = is_prop
+        self.is_proposition = is_proposition
         self.rule_number = rule_number
+        self.lowercase_token = token.lower()
 
 
 class WordList:

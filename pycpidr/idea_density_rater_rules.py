@@ -5,25 +5,25 @@ from pycpidr.word_item import WordListItem
 logger = logging.getLogger(__name__)
 
 # Tags for punctuation marks
-punct = [":", ",", "."]
+punctuation = [":", ",", "."]
 
 # Tags for adjectives
-adj = ["JJ", "JJR", "JJS"]
+adjectives = ["JJ", "JJR", "JJS"]
 
 # Tags for adverbs
-adv = ["RB", "RBR", "RBS", "WRB"]
+adverbs = ["RB", "RBR", "RBS", "WRB"]
 
 # Tags for verb forms
-verb = ["VB", "VBD", "VBG", "VBN", "VBP", "VBZ"]
+verbs = ["VB", "VBD", "VBG", "VBN", "VBP", "VBZ"]
 
 # Tags for noun forms
-noun = ["NN", "NNS", "NNP", "NNPS"]
+nouns = ["NN", "NNS", "NNP", "NNPS"]
 
 # Tags for interrogatives
-interrogative = ["WDT", "WP", "WPS", "WRB"]
+interrogatives = ["WDT", "WP", "WPS", "WRB"]
 
 # All the tags that, by default, are taken to be propositions
-prop = [
+default_propositions = [
     "CC",  # coordinating conjunction
     "CD",  # cardinal numeral
     "DT",  # determiner
@@ -105,7 +105,7 @@ come_go = [
 ]
 
 # All forms of all auxiliary verbs
-aux = [
+auxiliary_verbs = [
     "be",
     "am",
     "is",
@@ -129,7 +129,7 @@ aux = [
 
 # Linking verbs:
 # all forms of all verbs that take an adjective after them
-link = [
+linking_verbs = [
     # Being
     "be",
     "am",
@@ -184,7 +184,7 @@ link = [
 # Causative linking verbs:
 # all forms of all verbs that take noun phrase + adjective after them,
 # such as "make it better" or "turn it green."
-c_link = [
+causative_linking_verbs = [
     #  What else needs to be included here?
     "make",
     "makes",
@@ -201,29 +201,29 @@ c_link = [
 ]
 
 # First elements of correlating conjunctions
-correl = ["both", "either", "neither"]
+correlating_conjuntions = ["both", "either", "neither"]
 
 # N.B. The following are not all the negative-polarity items of English,
 # but only the ones that seem to form 2-word 1-concept idioms.
 
 # Negative-polarity items where the negative, rather than this word,
 # counts as the proposition; e.g., "not...yet" = "not".
-neg_pol1 = ["yet", "much", "many", "any", "anymore"]
+negative_polarity_1 = ["yet", "much", "many", "any", "anymore"]
 
 # Negative-polarity items where this word, rather than the earlier
 # negative, counts as the proposition; e.g., "not...unless" = "(n)unless".
-neg_pol2 = ["unless"]  # are there others?
+negative_polarity_2 = ["unless"]  # are there others?
 
 
 # Finds the first word in the sentence containing word_list_item[i]
-def beginning_of_sentence(word_list_item: WordListItem, i: int) -> int:
+def is_beginning_of_sentence(word_list_item: WordListItem, i: int) -> int:
     j = i - 1
     while (j > 0) and (word_list_item[j].tag != ".") and (word_list_item[j].tag != ""):
         j -= 1
     return j
 
 
-def match(first: str, second: str) -> bool:
+def is_repetition(first: str, second: str) -> bool:
     """
     Determines whether a word is likely to be a repetition of another.
     The first word may be incomplete, e.g. "hesi- hesitation".
@@ -239,7 +239,7 @@ def match(first: str, second: str) -> bool:
     return False
 
 
-def apply_idea_counting_rules(b: List[WordListItem], speech_mode: bool) -> None:
+def apply_idea_counting_rules(word_list: List[WordListItem], speech_mode: bool) -> None:
     #
     # This loop iterates through the WordList and may add and remove items.
     #
@@ -263,8 +263,10 @@ def apply_idea_counting_rules(b: List[WordListItem], speech_mode: bool) -> None:
     # been moved or should not be counted as words.
     #
     i = 0
-    while i < len(b):
+    while i < len(word_list):
+        word = word_list[i]
         print(f"i equals {i}")
+
         # logger.debug(f"{i} {b[i].token}/{b[i].tag}")
 
         # Rule group 000 - Identify words and adjust tags
@@ -274,60 +276,67 @@ def apply_idea_counting_rules(b: List[WordListItem], speech_mode: bool) -> None:
         # There will always be at least 10 null items at the beginning
         # so we can freely look back from the current position
         # without running off the beginning of the list.
-        if b[i].token == "":
+        if word.token == "":
             i += 1
             continue
+
+        previous = word_list[i - 1]
+        # next = word_list[i + 1]
 
         # 001
         # The symbol  ^  used to mark broken-off spoken sentences
         # is an end-of-sentence marker.
-        if b[i].token == "^":
-            b[i].tag = "."
-            b[i].rule_number = 1
+        if word.token == "^":
+            word.tag = "."
+            word.rule_number = 1
 
         # 002
         # The item is a word if its token starts with a letter or digit
         # and its tag is not SYM (symbol).
-        if b[i].token[0].isalnum() and b[i].tag != "SYM":
-            b[i].is_word = True
-            b[i].rule_number = 2
+        if word.token[0].isalnum() and word.tag != "SYM":
+            word.is_word = True
+            word.rule_number = 2
 
         # 003
         # Two cardinal numbers in immediate succession are combined into one
         # (Uncommon situation; the next one is much more common)
-        if b[i].tag == "CD" and b[i - 1].tag == "CD":
-            b[i - 1].token = f"{b[i - 1].token} {b[i].token}"  # adjust token
-            b[i - 1].rule_number = 3
+        if word.tag == "CD" and previous.tag == "CD":
+            previous.token = f"{previous.token} {word.token}"  # adjust token
+            previous.rule_number = 3
             i -= 1  # step backward 1
-            del b[i + 1]  # delete forward 1
+            word = word_list[i]
+            previous = word_list[i - 1]
+            del word_list[i + 1]  # delete forward 1
 
         # 004
         # Cardinal + nonalphanumeric + cardinal are combined into one token
         # (Common situation, for handling fractions, decimals, etc.)
         if (
-            b[i].tag == "CD"  # current token is a number
-            and len(b[i - 1].token) > 0  # preceding token contains some characters
-            and not b[i - 1].token[0].isalnum()  # the first of which is nonalphanumeric
-            and b[i - 2].tag == "CD"  # pre-preceding token is also a number
+            word.tag == "CD"  # current token is a number
+            and len(previous.token) > 0  # preceding token contains some characters
+            and not previous.token[0].isalnum()  # the first of which is nonalphanumeric
+            and word_list[i - 2].tag == "CD"  # pre-preceding token is also a number
         ):
-            b[i - 2].token = (
-                b[i - 2].token + b[i - 1].token + b[i].token
+            word_list[i - 2].token = (
+                word_list[i - 2].token + previous.token + word.token
             )  # adjust token
-            b[i - 2].rule_number = 4
+            word_list[i - 2].rule_number = 4
             i -= 2  # step backward 2
-            del b[i + 1 : i + 3]  # delete forward 2
+            word = word_list[i]
+            previous = word_list[i - 1]
+            del word_list[i + 1 : i + 3]  # delete forward 2
 
         # 020
         # Repetition of the form "A A" is simplified to "A".
         # The first A can be an initial substring of the second one.
         # Both remain in the word count.
         if speech_mode:
-            if match(b[i - 1].token, b[i].token):
+            if is_repetition(previous.token, word.token):
                 # Mark the first A as to be ignored
-                b[i - 1].is_prop = False
-                b[i - 1].is_word = False
-                b[i - 1].tag = ""
-                b[i - 1].rule_number = 20
+                previous.is_proposition = False
+                previous.is_word = False
+                previous.tag = ""
+                previous.rule_number = 20
 
         # 021, 022
         # Repetition of the form "A Punct A" is simplified to "A".
@@ -336,18 +345,18 @@ def apply_idea_counting_rules(b: List[WordListItem], speech_mode: bool) -> None:
         # The first A can be an initial substring of the second one.
         # Punct is anything with tag "." or "," or ":".
         if speech_mode:
-            if match(b[i - 2].token, b[i].token) and b[i].tag not in punct:
+            if is_repetition(word_list[i - 2].token, word.token) and word.tag not in punctuation:
                 # Mark the first A to be ignored
-                b[i - 2].tag = ""
-                b[i - 2].is_word = False
-                b[i - 2].is_prop = False
-                b[i - 2].rule_number = 22
+                word_list[i - 2].tag = ""
+                word_list[i - 2].is_word = False
+                word_list[i - 2].is_proposition = False
+                word_list[i - 2].rule_number = 22
                 # Mark the punctuation mark to be ignored
-                if b[i - 1].tag in punct:  # Punct
-                    b[i - 1].tag = ""
-                    b[i - 1].is_word = False
-                    b[i - 1].is_prop = False
-                    b[i - 1].rule_number = 21
+                if previous.tag in punctuation:  # Punct
+                    previous.tag = ""
+                    previous.is_word = False
+                    previous.is_proposition = False
+                    previous.rule_number = 21
 
         # 023
         # Repetition of the form "A B Punct A B" is simplified to "A B".
@@ -356,36 +365,36 @@ def apply_idea_counting_rules(b: List[WordListItem], speech_mode: bool) -> None:
         # Punct is anything with tag "." or "," or ":".
         if speech_mode:
             if (
-                match(b[i - 3].token, b[i].token)
-                and match(b[i - 4].token, b[i - 1].token)
-                and b[i - 2].tag in [".", ",", ":"]
+                is_repetition(word_list[i - 3].token, word.token)
+                and is_repetition(word_list[i - 4].token, previous.token)
+                and word_list[i - 2].tag in punctuation
             ):
-                b[i - 4].tag = b[i - 3].tag = b[i - 2].tag = ""
-                b[i - 4].is_word = b[i - 3].is_word = b[i - 2].is_word = False
-                b[i - 4].is_prop = b[i - 3].is_prop = b[i - 2].is_prop = False
-                b[i - 4].rule_number = b[i - 3].rule_number = b[i - 2].rule_number = 23
+                word_list[i - 4].tag = word_list[i - 3].tag = word_list[i - 2].tag = ""
+                word_list[i - 4].is_word = word_list[i - 3].is_word = word_list[i - 2].is_word = False
+                word_list[i - 4].is_proposition = word_list[i - 3].is_proposition = word_list[i - 2].is_proposition = False
+                word_list[i - 4].rule_number = word_list[i - 3].rule_number = word_list[i - 2].rule_number = 23
 
         # 050
         # 'not' and any word ending in "n't" are putatively propositions and
         # their tag is changed to NOT.
         if (
-            b[i].token.lower() == "not"
-            or b[i].token.lower().endswith("n't")
-            or b[i].token.lower() in nt
+            word.lowercase_token == "not"
+            or word.lowercase_token.endswith("n't")
+            or word.lowercase_token in nt
         ):
-            b[i].is_prop = True
-            b[i].tag = "NOT"
-            b[i].rule_number = 50
+            word.is_proposition = True
+            word.tag = "NOT"
+            word.rule_number = 50
 
         # 054
         # 'that/DT' or 'this/DT' is a pronoun, not a determiner, if the word following it
         # is any kind of verb or adverb.
-        if (b[i - 1].token.lower() == "that" or b[i - 1].token.lower() == "this") and (
-            b[i] in verb or b[i] in adv
+        if (previous.lowercase_token == "that" or previous.lowercase_token == "this") and (
+            word in verbs or word in adverbs
         ):
-            b[i - 1].tag = "PRP"
-            b[i - 1].rule_number = 54
-            b[i - 1].is_prop = False
+            previous.tag = "PRP"
+            previous.rule_number = 54
+            previous.is_proposition = False
 
         # Rule group 100 - Word order adjustment
         # Since all the rules apply in one pass,
@@ -400,39 +409,39 @@ def apply_idea_counting_rules(b: List[WordListItem], speech_mode: bool) -> None:
         # of the first verb, or the end of the sentence.
         # In some cases this will move a word too far to the right,
         # but the effect on proposition counting is benign.
-        if b[i].token.lower() in aux:
-            bos = beginning_of_sentence(b, i)
-            if bos == i or b[bos].tag in interrogative:
+        if word.lowercase_token in auxiliary_verbs:
+            bos = is_beginning_of_sentence(word_list, i)
+            if bos == i or word_list[bos].tag in interrogatives:
                 # find out where to move to
                 dest = i + 1
-                while dest < len(b):
-                    if b[dest].tag == "." or b[dest].tag in verb:
+                while dest < len(word_list):
+                    if word_list[dest].tag == "." or word_list[dest].tag in verbs:
                         break
                     dest += 1
 
                 # if movement is called for,
                 if dest > i + 1:
                     # insert a copy in the new location
-                    b.insert(dest, WordListItem(b[i].token, b[i].tag, True, True, 101))
+                    word_list.insert(dest, WordListItem(word.token, word.tag, True, True, 101))
                     # mark the old item as to be ignored
-                    b[i].tag = ""
-                    b[i].is_prop = False
-                    b[i].is_word = False
-                    b[i].token += "/moved"
+                    word.tag = ""
+                    word.is_proposition = False
+                    word.is_word = False
+                    word.token += "/moved"
 
         # Rule group 200 - Preliminary identification of propositions
 
         # 200
         # The tags in Prop are taken to indicate propositions.
-        if b[i].tag in prop:
-            b[i].is_prop = True
-            b[i].rule_number = 200
+        if word.tag in default_propositions:
+            word.is_proposition = True
+            word.rule_number = 200
 
         # 201
         # 'The', 'a', and 'an' are not propositions.
-        if b[i].token.lower() in ["the", "an", "a"]:
-            b[i].is_prop = False
-            b[i].rule_number = 201
+        if word.lowercase_token in ["the", "an", "a"]:
+            word.is_proposition = False
+            word.rule_number = 201
 
         # We get better agreement with Turner & Greene without this rule.
         # 202
@@ -447,163 +456,163 @@ def apply_idea_counting_rules(b: List[WordListItem], speech_mode: bool) -> None:
         # "either...or", "neither...nor", "both...and"
         # is not a proposition. The second word is tagged CC;
         # the first word may have been tagged CC or DT.
-        if b[i].tag == "CC" and not b[i].token.lower() in correl:
+        if word.tag == "CC" and not word.lowercase_token in correlating_conjuntions:
             # Search back up to 10 words, but not across a sentence end.
             for j in range(i - 1, max(i - 10, -1), -1):
-                if b[j].tag == ".":
+                if word_list[j].tag == ".":
                     break
-                if b[j].token.lower() in correl:
-                    b[j].is_prop = False
-                    b[j].rule_number = 203
+                if word_list[j].lowercase_token in correlating_conjuntions:
+                    word_list[j].is_proposition = False
+                    word_list[j].rule_number = 203
                     break
 
         # 204
         # "And then" and "or else" are each a single proposition
-        if (b[i - 1].token.lower() == "and" and b[i].token.lower() == "then") or (
-            b[i - 1].token.lower() == "or" and b[i].token.lower() == "else"
+        if (previous.lowercase_token == "and" and word.lowercase_token == "then") or (
+            previous.lowercase_token == "or" and word.lowercase_token == "else"
         ):
-            b[i].is_prop = False
-            b[i].rule_number = 204
+            word.is_proposition = False
+            word.rule_number = 204
 
         # 206
         # "To" is not a proposition when it is last word in sentence.
-        if b[i].tag == "." and b[i - 1].tag == "TO":
-            b[i - 1].is_prop = False
-            b[i - 1].rule_number = 206
+        if word.tag == "." and previous.tag == "TO":
+            previous.is_proposition = False
+            previous.rule_number = 206
 
         # 207
         # Modal is a proposition when it is last word in sentence.
-        if b[i].tag == "." and b[i - 1].tag == "MD":
-            b[i - 1].is_prop = True
-            b[i - 1].rule_number = 207
+        if word.tag == "." and previous.tag == "MD":
+            previous.is_proposition = True
+            previous.rule_number = 207
 
         # 210
         # Cardinal number is a proposition only if there is a noun
         # within 5 words after it (not crossing a sentence boundary).
         # This is so "in 3 parts" is 2 props but "in 1941" is only one.
-        if b[i].tag == "CD":
-            b[i].is_prop = False
-            b[i].rule_number = 210
+        if word.tag == "CD":
+            word.is_proposition = False
+            word.rule_number = 210
             # This rule looks forward up to 5 words, but not past
             # an end-of-sentence marker or the end of the WordList
-            for j in range(i + 1, min(len(b), i + 6)):
-                if b[j].tag == ".":
+            for j in range(i + 1, min(len(word_list), i + 6)):
+                if word_list[j].tag == ".":
                     break
-                if b[j].tag in noun:
-                    b[i].is_prop = True
+                if word_list[j].tag in nouns:
+                    word.is_proposition = True
                     break
 
         # 211
         # 'Not...unless' and similar pairs count as one proposition
         # (the second word is the one counted).
-        if b[i].token.lower() in neg_pol2:
+        if word.lowercase_token in negative_polarity_2:
             # Much the same algorithm as for correlating conjunctions.
             # Search back up to 10 words, but not across a sentence end.
             for j in range(i - 1, max(i - 10, -1), -1):
-                if b[j].tag == ".":
+                if word_list[j].tag == ".":
                     break
-                if b[j].tag == "NOT":
-                    b[j].is_prop = False
-                    b[j].rule_number = 211
+                if word_list[j].tag == "NOT":
+                    word_list[j].is_proposition = False
+                    word_list[j].rule_number = 211
                     break
 
         # 212
         # 'Not...any' and similar pairs count as one proposition
         # (the first word is the one counted).
-        if b[i].token.lower() in neg_pol1:
+        if word.lowercase_token in negative_polarity_1:
             # Much the same algorithm as for correlating conjunctions.
             # Search back up to 10 words, but not across a sentence end.
             for j in range(i - 1, max(i - 10, -1), -1):
-                if b[j].tag == ".":
+                if word_list[j].tag == ".":
                     break
-                if b[j].tag == "NOT":
-                    b[i].is_prop = False
-                    b[i].rule_number = 212
+                if word_list[j].tag == "NOT":
+                    word.is_proposition = False
+                    word.rule_number = 212
                     break
 
         # 213
         # "Going to" is not a proposition when immediately preceding a verb.
         if (
-            b[i].tag in verb
-            and b[i - 1].token.lower() == "to"
-            and b[i - 2].token.lower() == "going"
+            word.tag in verbs
+            and previous.lowercase_token == "to"
+            and word_list[i - 2].lowercase_token == "going"
         ):
-            b[i - 1].is_prop = False
-            b[i - 1].rule_number = 213
-            b[i - 2].is_prop = False
-            b[i - 2].rule_number = 213
+            previous.is_proposition = False
+            previous.rule_number = 213
+            word_list[i - 2].is_proposition = False
+            word_list[i - 2].rule_number = 213
 
         # 214
         # "If ... then" is 1 conjunction, not two.
         # Actually checking for "if ... then (word)"
         # because "then" as last word of sentence is more likely to be adverb.
-        if b[i].is_word and b[i - 1].token.lower() == "then":
+        if word.is_word and previous.lowercase_token == "then":
             # Much the same algorithm as for correlating conjunctions.
             # Search back up to 10 words, but not across a sentence end.
             for j in range(i - 1, max(i - 10, -1), -1):
-                if b[j].tag == ".":
+                if word_list[j].tag == ".":
                     break
-                if b[j].token.lower() == "if":
-                    b[i - 1].is_prop = False
-                    b[i - 1].rule_number = 214
+                if word_list[j].lowercase_token == "if":
+                    previous.is_proposition = False
+                    previous.rule_number = 214
                     break
 
         # 225
         # "each other" is a pronoun (to be tagged as PRP PRP).
-        if b[i].token.lower() == "other" and b[i - 1].token.lower() == "each":
-            b[i].tag = b[i - 1].tag = "PRP"
-            b[i].is_prop = b[i - 1].is_prop = False
-            b[i].rule_number = b[i - 1].rule_number = 225
+        if word.lowercase_token == "other" and previous.lowercase_token == "each":
+            word.tag = previous.tag = "PRP"
+            word.is_proposition = previous.is_proposition = False
+            word.rule_number = previous.rule_number = 225
 
         # 230
         # "how come" and "how many" are each 1 proposition, not two.
-        if (b[i].token.lower() in ["come", "many"]) and (
-            b[i - 1].token.lower() == "how"
+        if (word.lowercase_token in ["come", "many"]) and (
+            previous.lowercase_token == "how"
         ):
-            b[i].is_prop = False
-            b[i].tag = b[i - 1].tag
-            b[i].rule_number = 230
+            word.is_proposition = False
+            word.tag = previous.tag
+            word.rule_number = 230
 
         # Rule group 300 - Linking verbs
 
         # 301
         # Linking verb is not a proposition if followed by adj. or adv.
         # (Apparently, adverbs are frequent tagging mistakes for adjectives.)
-        if (b[i].tag in adj or b[i].tag in adv) and b[i - 1].token.lower() in link:
-            b[i - 1].is_prop = False
-            b[i - 1].rule_number = 301
+        if (word.tag in adjectives or word.tag in adverbs) and previous.lowercase_token in linking_verbs:
+            previous.is_proposition = False
+            previous.rule_number = 301
 
         # 302
         # "Be" is not a proposition when followed by a preposition.
         # (May want to modify this to allow an intervening adverb.)
-        if b[i].tag == "IN" and b[i - 1].token.lower() in be:
-            b[i - 1].is_prop = False
-            b[i - 1].rule_number = 302
+        if word.tag == "IN" and previous.lowercase_token in be:
+            previous.is_proposition = False
+            previous.rule_number = 302
 
         # 310
         # Linking verb + Adverb + { PDT, DT } is 2 propositions
         # (e.g., "he is now the president").
         # (Would otherwise be undercounted because of rule 201).
-        if b[i].tag in ["DT", "PDT"]:
-            if b[i - 1].tag in adv and b[i - 2].token.lower() in link:
-                b[i - 1].is_prop = True
-                b[i - 1].rule_number = 310
-                b[i - 2].is_prop = True
-                b[i - 2].rule_number = 310
+        if word.tag in ["DT", "PDT"]:
+            if previous.tag in adverbs and word_list[i - 2].lowercase_token in linking_verbs:
+                previous.is_proposition = True
+                previous.rule_number = 310
+                word_list[i - 2].is_proposition = True
+                word_list[i - 2].rule_number = 310
 
         # 311
         # Causative linking verbs: 'make it better' and similar
         # phrases do not count the adjective as a new proposition
         # (since the verb was counted).
-        if b[i].tag in adj:
+        if word.tag in adjectives:
             # Much the same algorithm as for correlating conjunctions.
             # Search back up to 10 words, but not across a sentence boundary.
             for j in range(i - 1, max(i - 10, -1), -1):
-                if b[j].tag == ".":
+                if word_list[j].tag == ".":
                     break
-                if b[j].token.lower() in c_link:
-                    b[i].is_prop = False
-                    b[i].rule_number = 311
+                if word_list[j].lowercase_token in causative_linking_verbs:
+                    word.is_proposition = False
+                    word.rule_number = 311
                     break
 
         # Rule group 400 - Auxiliary verbs are not propositions
@@ -613,45 +622,45 @@ def apply_idea_counting_rules(b: List[WordListItem], speech_mode: bool) -> None:
 
         # 401
         # Aux not is one proposition, not two
-        if b[i].token.lower() == "not" and b[i - 1].token.lower() in aux:
-            b[i - 1].is_prop = False
-            b[i - 1].rule_number = 401
+        if word.lowercase_token == "not" and previous.lowercase_token in auxiliary_verbs:
+            previous.is_proposition = False
+            previous.rule_number = 401
 
         # 402
         # Aux Verb is one proposition, not two
-        if b[i].tag in verb and b[i - 1].token.lower() in aux:
-            b[i - 1].is_prop = False
-            b[i - 1].rule_number = 402
+        if word.tag in verbs and previous.lowercase_token in auxiliary_verbs:
+            previous.is_proposition = False
+            previous.rule_number = 402
 
         # 405
         # Aux NOT Verb          (NOT and the second Verb are propositions)
         # Also Aux Adverb Verb  (e.g., "had always sung", "would rather go")
         if (
-            b[i].tag in verb
-            and ((b[i - 1].tag == "NOT") or b[i - 1].tag in adv)
-            and b[i - 2].token.lower() in aux
+            word.tag in verbs
+            and ((previous.tag == "NOT") or previous.tag in adverbs)
+            and word_list[i - 2].lowercase_token in auxiliary_verbs
         ):
-            b[i - 2].is_prop = False
-            b[i - 2].rule_number = 405
+            word_list[i - 2].is_proposition = False
+            word_list[i - 2].rule_number = 405
 
         # Rule group 500 - Constructions involving 'to'
 
         # 510
         # TO VB is one proposition, not two
-        if b[i].tag == "VB" and b[i - 1].tag == "TO":
-            b[i - 1].is_prop = False
-            b[i - 1].rule_number = 510
+        if word.tag == "VB" and previous.tag == "TO":
+            previous.is_proposition = False
+            previous.rule_number = 510
 
         # 511
         # "for ... TO VB": "for" is not a proposition
-        if b[i].tag == "VB" and b[i - 1].tag == "TO":
+        if word.tag == "VB" and previous.tag == "TO":
             # Search back up to 10 words, but not across a sentence end.
             for j in range(i - 1, max(i - 10, -1), -1):
-                if b[j].tag == ".":
+                if word_list[j].tag == ".":
                     break
-                if b[j].token.lower() == "for":
-                    b[j].is_prop = False
-                    b[j].rule_number = 511
+                if word_list[j].lowercase_token == "for":
+                    word_list[j].is_proposition = False
+                    word_list[j].rule_number = 511
                     break
 
         # 512
@@ -670,43 +679,43 @@ def apply_idea_counting_rules(b: List[WordListItem], speech_mode: bool) -> None:
 
         # 610
         # A sentence consisting entirely of probable filler words is propositionless
-        if speech_mode and b[i].tag == ".":
-            bos = beginning_of_sentence(b, i)
+        if speech_mode and word.tag == ".":
+            bos = is_beginning_of_sentence(word_list, i)
             k = 0
             for j in range(bos, i):
-                if b[j].tag != "UH" and b[j].token.lower() not in filler:
+                if word_list[j].tag != "UH" and word_list[j].lowercase_token not in filler:
                     k += 1
 
             if k == 0:
                 for j in range(bos, i):
-                    b[j].tag = ""
-                    b[j].is_prop = False
-                    b[j].rule_number = 610
+                    word_list[j].tag = ""
+                    word_list[j].is_proposition = False
+                    word_list[j].rule_number = 610
 
         # 632
         # In speech mode, "like" is a filler when not immediately preceded by a form of "be".
         if speech_mode:
-            if b[i].token.lower() == "like" and b[i - 1].token.lower() not in be:
-                b[i].tag = ""
-                b[i].is_prop = False
-                b[i].rule_number = 632
+            if word.lowercase_token == "like" and previous.lowercase_token not in be:
+                word.tag = ""
+                word.is_proposition = False
+                word.rule_number = 632
 
         # 634
         # In speech mode, "you know" is a filler and counts as one word, not two.
         if speech_mode:
             if (
                 i > 0
-                and b[i - 1].token.lower() == "you"
-                and b[i].token.lower() == "know"
+                and previous.lowercase_token == "you"
+                and word.lowercase_token == "know"
             ):
                 # back up one
                 i -= 1
                 # delete forward one
-                del b[i + 1]
+                del word_list[i + 1]
                 # reset data for the current item
-                b[i].token = "you_know"
-                b[i].tag = ""
-                b[i].is_prop = False
-                b[i].is_word = True
-                b[i].rule_number = 634
+                word.token = "you_know"
+                word.tag = ""
+                word.is_proposition = False
+                word.is_word = True
+                word.rule_number = 634
         i += 1

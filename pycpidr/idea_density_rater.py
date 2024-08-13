@@ -43,6 +43,6 @@ def count_words_and_propositions(word_list: WordList) -> Tuple[int, int]:
         Tuple[int, int]: A tuple containing the word count and proposition count.
     """
     word_count = sum(1 for word in word_list.items if word.is_word)
-    proposition_count = sum(1 for word in word_list.items if word.is_prop)
+    proposition_count = sum(1 for word in word_list.items if word.is_proposition)
 
     return word_count, proposition_count

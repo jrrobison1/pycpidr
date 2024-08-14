@@ -197,6 +197,7 @@ NEGATIVE_POLARITY_2 = frozenset({"unless"})  # are there others?
 
 MAX_LOOKBACK = 10
 MAX_LOOKAHEAD = 5
+SENTENCE_END = "."
 
 def is_beginning_of_sentence(word_list_item: WordListItem, i: int) -> int:
     """
@@ -210,7 +211,7 @@ def is_beginning_of_sentence(word_list_item: WordListItem, i: int) -> int:
         int: The index of the beginning of the sentence, or 0 if not found.
     """
     j = i - 1
-    while (j > 0) and (word_list_item[j].tag != ".") and (word_list_item[j].tag != ""):
+    while (j > 0) and (word_list_item[j].tag != SENTENCE_END) and (word_list_item[j].tag != ""):
         j -= 1
     return j
 
@@ -231,13 +232,13 @@ def is_repetition(first: str, second: str) -> bool:
     return False
 
 
-def search_backwards(word_list: List[WordListItem], i: int, condition: Callable[[WordListItem], bool]) -> Optional[int]:
+def search_backwards(word_list: List[WordListItem], i: int, condition: Callable[[WordListItem], bool]) -> Optional[WordListItem]:
     for j in range(i - 1, max(i - MAX_LOOKBACK, -1), -1):
         prev_word = word_list[j]
-        if prev_word.tag == ".":
+        if prev_word.tag == SENTENCE_END:
             break
         if condition(prev_word):
-            return j
+            return word_list[j]
     return None
 
 
@@ -279,12 +280,13 @@ def apply_idea_counting_rules(word_list: List[WordListItem], speech_mode: bool) 
             continue
 
         previous = word_list[i - 1]
+        two_words_back = word_list[i - 2]
 
         # 001
         # The symbol  ^  used to mark broken-off spoken sentences
         # is an end-of-sentence marker.
         if word.token == "^":
-            word.tag = "."
+            word.tag = SENTENCE_END
             word.rule_number = 1
 
         # 002
@@ -300,10 +302,11 @@ def apply_idea_counting_rules(word_list: List[WordListItem], speech_mode: bool) 
         if word.tag == "CD" and previous.tag == "CD":
             previous.token = f"{previous.token} {word.token}"  # adjust token
             previous.rule_number = 3
-            i -= 1  # step backward 1
+            i -= 1  
             word = word_list[i]
             previous = word_list[i - 1]
-            del word_list[i + 1]  # delete forward 1
+            two_words_back = word_list[i - 2]
+            del word_list[i + 1]  
 
         # 004
         # Cardinal + nonalphanumeric + cardinal are combined into one token
@@ -312,16 +315,17 @@ def apply_idea_counting_rules(word_list: List[WordListItem], speech_mode: bool) 
             word.tag == "CD"  # current token is a number
             and len(previous.token) > 0  # preceding token contains some characters
             and not previous.token[0].isalnum()  # the first of which is nonalphanumeric
-            and word_list[i - 2].tag == "CD"  # pre-preceding token is also a number
+            and two_words_back.tag == "CD"  # pre-preceding token is also a number
         ):
-            word_list[i - 2].token = (
-                word_list[i - 2].token + previous.token + word.token
-            )  # adjust token
-            word_list[i - 2].rule_number = 4
-            i -= 2  # step backward 2
+            two_words_back.token = (
+                two_words_back.token + previous.token + word.token
+            )  
+            two_words_back.rule_number = 4
+            i -= 2  
             word = word_list[i]
             previous = word_list[i - 1]
-            del word_list[i + 1 : i + 3]  # delete forward 2
+            two_words_back = word_list[i - 2]
+            del word_list[i + 1 : i + 3]  
 
         # 020
         # Repetition of the form "A A" is simplified to "A".
@@ -329,7 +333,6 @@ def apply_idea_counting_rules(word_list: List[WordListItem], speech_mode: bool) 
         # Both remain in the word count.
         if speech_mode:
             if is_repetition(previous.token, word.token):
-                # Mark the first A as to be ignored
                 previous.is_proposition = False
                 previous.is_word = False
                 previous.tag = ""
@@ -342,14 +345,12 @@ def apply_idea_counting_rules(word_list: List[WordListItem], speech_mode: bool) 
         # The first A can be an initial substring of the second one.
         # Punct is anything with tag "." or "," or ":".
         if speech_mode:
-            if is_repetition(word_list[i - 2].token, word.token) and word.tag not in PUNCTUATION:
-                # Mark the first A to be ignored
-                word_list[i - 2].tag = ""
-                word_list[i - 2].is_word = False
-                word_list[i - 2].is_proposition = False
-                word_list[i - 2].rule_number = 22
-                # Mark the punctuation mark to be ignored
-                if previous.tag in PUNCTUATION:  # Punct
+            if is_repetition(two_words_back.token, word.token) and word.tag not in PUNCTUATION:
+                two_words_back.tag = ""
+                two_words_back.is_word = False
+                two_words_back.is_proposition = False
+                two_words_back.rule_number = 22
+                if previous.tag in PUNCTUATION:  
                     previous.tag = ""
                     previous.is_word = False
                     previous.is_proposition = False
@@ -410,7 +411,7 @@ def apply_idea_counting_rules(word_list: List[WordListItem], speech_mode: bool) 
                 # find out where to move to
                 target_position = i + 1
                 while target_position < len(word_list):
-                    if word_list[target_position].tag == "." or word_list[target_position].tag in VERBS:
+                    if word_list[target_position].tag == SENTENCE_END or word_list[target_position].tag in VERBS:
                         break
                     target_position += 1
 
@@ -449,14 +450,10 @@ def apply_idea_counting_rules(word_list: List[WordListItem], speech_mode: bool) 
         # is not a proposition. The second word is tagged CC;
         # the first word may have been tagged CC or DT.
         if word.tag == "CC" and not word.lowercase_token in CORRELATING_CONJUNCTIONS:
-            # Search back up to 10 words, but not across a sentence end.
-            j = search_backwards(word_list, i, lambda word: word.tag == ".")
-            if j is not None:
-                prev_word = word_list[j]
-                if prev_word.lowercase_token in CORRELATING_CONJUNCTIONS:
-                    prev_word.is_proposition = False
-                    prev_word.rule_number = 203
-                    break
+            target_item = search_backwards(word_list, i, lambda w: w.lowercase_token in CORRELATING_CONJUNCTIONS)
+            if target_item is not None:
+                target_item.is_proposition = False
+                target_item.rule_number = 203
 
         # 204
         # "And then" and "or else" are each a single proposition
@@ -468,13 +465,13 @@ def apply_idea_counting_rules(word_list: List[WordListItem], speech_mode: bool) 
 
         # 206
         # "To" is not a proposition when it is last word in sentence.
-        if word.tag == "." and previous.tag == "TO":
+        if word.tag == SENTENCE_END and previous.tag == "TO":
             previous.is_proposition = False
             previous.rule_number = 206
 
         # 207
         # Modal is a proposition when it is last word in sentence.
-        if word.tag == "." and previous.tag == "MD":
+        if word.tag == SENTENCE_END and previous.tag == "MD":
             previous.is_proposition = True
             previous.rule_number = 207
 
@@ -489,7 +486,7 @@ def apply_idea_counting_rules(word_list: List[WordListItem], speech_mode: bool) 
             # an end-of-sentence marker or the end of the WordList
             for j in range(i + 1, min(len(word_list), i + MAX_LOOKAHEAD + 1)):
                 next_word = word_list[j]
-                if next_word.tag == ".":
+                if next_word.tag == SENTENCE_END:
                     break
                 if next_word.tag in NOUNS:
                     word.is_proposition = True
@@ -499,56 +496,41 @@ def apply_idea_counting_rules(word_list: List[WordListItem], speech_mode: bool) 
         # 'Not...unless' and similar pairs count as one proposition
         # (the second word is the one counted).
         if word.lowercase_token in NEGATIVE_POLARITY_2:
-            # Search back up to 10 words, but not across a sentence end.
-            for j in range(i - 1, max(i - 10, -1), -1):
-                prev_word = word_list[j]
-                if prev_word.tag == ".":
-                    break
-                if prev_word.tag == "NOT":
-                    prev_word.is_proposition = False
-                    prev_word.rule_number = 211
-                    break
+            target_item = search_backwards(word_list, i, lambda w: w.tag == "NOT")
+            if target_item is not None:
+                target_item.is_proposition = False
+                target_item.rule_number = 211
 
         # 212
         # 'Not...any' and similar pairs count as one proposition
         # (the first word is the one counted).
         if word.lowercase_token in NEGATIVE_POLARITY_1:
-            # Search back up to 10 words, but not across a sentence end.
-            for j in range(i - 1, max(i - 10, -1), -1):
-                prev_word = word_list[j]
-                if prev_word.tag == ".":
-                    break
-                if prev_word.tag == "NOT":
-                    word.is_proposition = False
-                    word.rule_number = 212
-                    break
+            target_item = search_backwards(word_list, i, lambda w: w.tag == "NOT")
+            if target_item is not None:
+                word.is_proposition = False
+                word.rule_number = 212
 
         # 213
         # "Going to" is not a proposition when immediately preceding a verb.
         if (
             word.tag in VERBS
             and previous.lowercase_token == "to"
-            and word_list[i - 2].lowercase_token == "going"
+            and two_words_back.lowercase_token == "going"
         ):
             previous.is_proposition = False
             previous.rule_number = 213
-            word_list[i - 2].is_proposition = False
-            word_list[i - 2].rule_number = 213
+            two_words_back.is_proposition = False
+            two_words_back.rule_number = 213
 
         # 214
         # "If ... then" is 1 conjunction, not two.
         # Actually checking for "if ... then (word)"
         # because "then" as last word of sentence is more likely to be adverb.
         if word.is_word and previous.lowercase_token == "then":
-            # Search back up to 10 words, but not across a sentence end.
-            for j in range(i - 1, max(i - 10, -1), -1):
-                prev_word = word_list[j]
-                if prev_word.tag == ".":
-                    break
-                if prev_word.lowercase_token == "if":
-                    previous.is_proposition = False
-                    previous.rule_number = 214
-                    break
+            target_item = search_backwards(word_list, i, lambda w: w.lowercase_token == "if")
+            if target_item is not None:
+                previous.is_proposition = False
+                previous.rule_number = 214
 
         # 225
         # "each other" is a pronoun (to be tagged as PRP PRP).
@@ -589,20 +571,16 @@ def apply_idea_counting_rules(word_list: List[WordListItem], speech_mode: bool) 
             if previous.tag in ADVERBS and word_list[i - 2].lowercase_token in LINKING_VERBS:
                 previous.is_proposition = True
                 previous.rule_number = 310
-                word_list[i - 2].is_proposition = True
-                word_list[i - 2].rule_number = 310
+                two_words_back.is_proposition = True
+                two_words_back.rule_number = 310
 
         # 311: Causative linking verbs
         # 'make it better' and similar phrases don't count the adjective as a new proposition
         if word.tag in ADJECTIVES:
-            for j in range(i - 1, max(i - 10, -1), -1):
-                prev_word = word_list[j]
-                if prev_word.tag == ".":
-                    break
-                if prev_word.lowercase_token in CAUSATIVE_LINKING_VERBS:
-                    word.is_proposition = False
-                    word.rule_number = 311
-                    break
+            target_item = search_backwards(word_list, i, lambda w: w.lowercase_token in CAUSATIVE_LINKING_VERBS)
+            if target_item is not None:
+                word.is_proposition = False
+                word.rule_number = 311
 
         # Rule group 400 - Auxiliary verbs are not propositions
 
@@ -627,10 +605,10 @@ def apply_idea_counting_rules(word_list: List[WordListItem], speech_mode: bool) 
         if (
             word.tag in VERBS
             and ((previous.tag == "NOT") or previous.tag in ADVERBS)
-            and word_list[i - 2].lowercase_token in AUXILIARY_VERBS
+            and two_words_back.lowercase_token in AUXILIARY_VERBS
         ):
-            word_list[i - 2].is_proposition = False
-            word_list[i - 2].rule_number = 405
+            two_words_back.is_proposition = False
+            two_words_back.rule_number = 405
 
         # Rule group 500 - Constructions involving 'to'
 
@@ -644,14 +622,11 @@ def apply_idea_counting_rules(word_list: List[WordListItem], speech_mode: bool) 
         # "for ... TO VB": "for" is not a proposition
         if word.tag == "VB" and previous.tag == "TO":
             # Search back up to 10 words, but not across a sentence end.
-            for j in range(i - 1, max(i - 10, -1), -1):
-                prev_word = word_list[j]
-                if prev_word.tag == ".":
-                    break
-                if prev_word.lowercase_token == "for":
-                    prev_word.is_proposition = False
-                    prev_word.rule_number = 511
-                    break
+            target_item = search_backwards(word_list, i, lambda w: w.lowercase_token == "for")
+            if target_item is not None:
+                target_item.is_proposition = False
+                target_item.rule_number = 511
+
 
         # 512
         # "From" and "to" form a single proposition with
@@ -669,7 +644,7 @@ def apply_idea_counting_rules(word_list: List[WordListItem], speech_mode: bool) 
 
         # 610
         # A sentence consisting entirely of probable filler words is propositionless
-        if speech_mode and word.tag == ".":
+        if speech_mode and word.tag == SENTENCE_END:
             bos = is_beginning_of_sentence(word_list, i)
             k = 0
             for j in range(bos, i):
@@ -701,6 +676,7 @@ def apply_idea_counting_rules(word_list: List[WordListItem], speech_mode: bool) 
                 i -= 1
                 word = word_list[i]
                 previous = word_list[i - 1]
+                two_words_back = word_list[i - 2]
                 del word_list[i + 1]
                 # reset data for the current item
                 word.token = "you_know"

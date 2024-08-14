@@ -1,15 +1,22 @@
 import logging
-from typing import List
+from typing import Callable, List
 
 from pycpidr.utils.constants import *
+from pycpidr.utils.word_search_utils import (
+    is_beginning_of_sentence,
+    is_repetition,
+    search_backwards,
+)
 from pycpidr.word_item import WordListItem
-from pycpidr.utils.word_search_utils import search_backwards, is_beginning_of_sentence, is_repetition
 
 logger = logging.getLogger(__name__)
 
 MAX_LOOKAHEAD = 5
 
-def identify_words_and_adjust_tags(word_list: List[WordListItem], i: int, speech_mode: bool) -> int:
+
+def identify_words_and_adjust_tags(
+    word_list: List[WordListItem], i: int, speech_mode: bool
+) -> int:
     """
     Identify words and adjust tags based on specific rules.
 
@@ -40,32 +47,32 @@ def identify_words_and_adjust_tags(word_list: List[WordListItem], i: int, speech
     word = word_list[i]
     previous = word_list[i - 1]
     two_words_back = word_list[i - 2]
-    
+
     # 001
     # The symbol  ^  used to mark broken-off spoken sentences
     # is an end-of-sentence marker.
     if word.token == "^":
         word.tag = SENTENCE_END
-        word.rule_number = 1
+        word.rule_number = RuleNumber.SENTENCE_END_MARKER
 
     # 002
     # The item is a word if its token starts with a letter or digit
     # and its tag is not SYM (symbol).
     if word.token[0].isalnum() and word.tag != "SYM":
         word.is_word = True
-        word.rule_number = 2
+        word.rule_number = RuleNumber.ALPHANUMERIC_WORD
 
     # 003
     # Two cardinal numbers in immediate succession are combined into one
     # (Uncommon situation; the next one is much more common)
     if word.tag == "CD" and previous.tag == "CD":
         previous.token = f"{previous.token} {word.token}"  # adjust token
-        previous.rule_number = 3
-        i -= 1  
+        previous.rule_number = RuleNumber.COMBINE_CONSECUTIVE_CARDINALS
+        i -= 1
         word = word_list[i]
         previous = word_list[i - 1]
         two_words_back = word_list[i - 2]
-        del word_list[i + 1]  
+        del word_list[i + 1]
 
     # 004
     # Cardinal + nonalphanumeric + cardinal are combined into one token
@@ -76,15 +83,13 @@ def identify_words_and_adjust_tags(word_list: List[WordListItem], i: int, speech
         and not previous.token[0].isalnum()  # the first of which is nonalphanumeric
         and two_words_back.tag == "CD"  # pre-preceding token is also a number
     ):
-        two_words_back.token = (
-            two_words_back.token + previous.token + word.token
-        )  
-        two_words_back.rule_number = 4
-        i -= 2  
+        two_words_back.token = two_words_back.token + previous.token + word.token
+        two_words_back.rule_number = RuleNumber.COMBINE_CARDINALS_WITH_SEPARATOR
+        i -= 2
         word = word_list[i]
         previous = word_list[i - 1]
         two_words_back = word_list[i - 2]
-        del word_list[i + 1 : i + 3]  
+        del word_list[i + 1 : i + 3]
 
     # 020
     # Repetition of the form "A A" is simplified to "A".
@@ -104,12 +109,15 @@ def identify_words_and_adjust_tags(word_list: List[WordListItem], i: int, speech
     # The first A can be an initial substring of the second one.
     # Punct is anything with tag "." or "," or ":".
     if speech_mode:
-        if is_repetition(two_words_back.token, word.token) and word.tag not in PUNCTUATION:
+        if (
+            is_repetition(two_words_back.token, word.token)
+            and word.tag not in PUNCTUATION
+        ):
             two_words_back.tag = ""
             two_words_back.is_word = False
             two_words_back.is_proposition = False
             two_words_back.rule_number = 22
-            if previous.tag in PUNCTUATION:  
+            if previous.tag in PUNCTUATION:
                 previous.tag = ""
                 previous.is_word = False
                 previous.is_proposition = False
@@ -127,9 +135,15 @@ def identify_words_and_adjust_tags(word_list: List[WordListItem], i: int, speech
             and word_list[i - 2].tag in PUNCTUATION
         ):
             word_list[i - 4].tag = word_list[i - 3].tag = word_list[i - 2].tag = ""
-            word_list[i - 4].is_word = word_list[i - 3].is_word = word_list[i - 2].is_word = False
-            word_list[i - 4].is_proposition = word_list[i - 3].is_proposition = word_list[i - 2].is_proposition = False
-            word_list[i - 4].rule_number = word_list[i - 3].rule_number = word_list[i - 2].rule_number = 23
+            word_list[i - 4].is_word = word_list[i - 3].is_word = word_list[
+                i - 2
+            ].is_word = False
+            word_list[i - 4].is_proposition = word_list[i - 3].is_proposition = (
+                word_list[i - 2].is_proposition
+            ) = False
+            word_list[i - 4].rule_number = word_list[i - 3].rule_number = word_list[
+                i - 2
+            ].rule_number = 23
 
     # 050
     # 'not' and any word ending in "n't" are assumed to be propositions and
@@ -155,6 +169,7 @@ def identify_words_and_adjust_tags(word_list: List[WordListItem], i: int, speech
 
     return i
 
+
 def adjust_word_order(word_list: List[WordListItem], i: int, speech_mode: bool) -> int:
     """
     Adjust word order for subject-auxiliary inversion in questions.
@@ -179,12 +194,13 @@ def adjust_word_order(word_list: List[WordListItem], i: int, speech_mode: bool) 
 
     # 101
     # Subject-Aux inversion
-    # If the current word is an Aux,
-    # and the current word is the first word of the sentence
-    # or the sentence begins with an interrogative,
-    # move the current word rightward to put it in front
-    # of the first verb, or the end of the sentence.
-    # In some cases this will move a word too far to the right,
+    # If the current word is an Aux, and:
+    #   1. It's the first word of the sentence, or
+    #   2. The sentence begins with an interrogative,
+    # then move the current word rightward to put it:
+    #   - In front of the first verb, or
+    #   - At the end of the sentence.
+    # Note: In some cases this may move a word too far right,
     # but the effect on proposition counting is benign.
     if word.lowercase_token in AUXILIARY_VERBS:
         sentence_start = is_beginning_of_sentence(word_list, i)
@@ -192,13 +208,17 @@ def adjust_word_order(word_list: List[WordListItem], i: int, speech_mode: bool) 
             # find out where to move to
             target_position = i + 1
             while target_position < len(word_list):
-                if word_list[target_position].tag == SENTENCE_END or word_list[target_position].tag in VERBS:
+                if (
+                    word_list[target_position].tag == SENTENCE_END
+                    or word_list[target_position].tag in VERBS
+                ):
                     break
                 target_position += 1
 
-            # if movement is called for,
             if target_position > i + 1:
-                word_list.insert(target_position, WordListItem(word.token, word.tag, True, True, 101))
+                word_list.insert(
+                    target_position, WordListItem(word.token, word.tag, True, True, 101)
+                )
                 # mark the old item as to be ignored
                 word.tag = ""
                 word.is_proposition = False
@@ -207,7 +227,10 @@ def adjust_word_order(word_list: List[WordListItem], i: int, speech_mode: bool) 
 
     return i
 
-def identify_potential_propositions(word_list: List[WordListItem], i: int, speech_mode: bool) -> int:
+
+def identify_potential_propositions(
+    word_list: List[WordListItem], i: int, speech_mode: bool
+) -> int:
     """
     Identify potential propositions and apply specific rules to adjust their status.
 
@@ -268,7 +291,9 @@ def identify_potential_propositions(word_list: List[WordListItem], i: int, speec
     # is not a proposition. The second word is tagged CC;
     # the first word may have been tagged CC or DT.
     if word.tag == "CC" and not word.lowercase_token in CORRELATING_CONJUNCTIONS:
-        target_item = search_backwards(word_list, i, lambda w: w.lowercase_token in CORRELATING_CONJUNCTIONS)
+        target_item = search_backwards(
+            word_list, i, lambda w: w.lowercase_token in CORRELATING_CONJUNCTIONS
+        )
         if target_item is not None:
             target_item.is_proposition = False
             target_item.rule_number = 203
@@ -345,7 +370,9 @@ def identify_potential_propositions(word_list: List[WordListItem], i: int, speec
     # Actually checking for "if ... then (word)"
     # because "then" as last word of sentence is more likely to be adverb.
     if word.is_word and previous.lowercase_token == "then":
-        target_item = search_backwards(word_list, i, lambda w: w.lowercase_token == "if")
+        target_item = search_backwards(
+            word_list, i, lambda w: w.lowercase_token == "if"
+        )
         if target_item is not None:
             previous.is_proposition = False
             previous.rule_number = 214
@@ -366,9 +393,12 @@ def identify_potential_propositions(word_list: List[WordListItem], i: int, speec
         word.tag = previous.tag
         word.rule_number = 230
 
-    return i    
+    return i
 
-def handle_linking_verbs(word_list: List[WordListItem], i: int, speech_mode: bool) -> int:
+
+def handle_linking_verbs(
+    word_list: List[WordListItem], i: int, speech_mode: bool
+) -> int:
     """
     Handle rules related to linking verbs and their interactions with other parts of speech.
 
@@ -400,7 +430,9 @@ def handle_linking_verbs(word_list: List[WordListItem], i: int, speech_mode: boo
     previous = word_list[i - 1]
     two_words_back = word_list[i - 2]
 
-    if (word.tag in ADJECTIVES or word.tag in ADVERBS) and previous.lowercase_token in LINKING_VERBS:
+    if (
+        word.tag in ADJECTIVES or word.tag in ADVERBS
+    ) and previous.lowercase_token in LINKING_VERBS:
         previous.is_proposition = False
         previous.rule_number = 301
 
@@ -415,7 +447,10 @@ def handle_linking_verbs(word_list: List[WordListItem], i: int, speech_mode: boo
     # (e.g., "he is now the president").
     # (Would otherwise be undercounted because of rule 201).
     if word.tag in ["DT", "PDT"]:
-        if previous.tag in ADVERBS and word_list[i - 2].lowercase_token in LINKING_VERBS:
+        if (
+            previous.tag in ADVERBS
+            and word_list[i - 2].lowercase_token in LINKING_VERBS
+        ):
             previous.is_proposition = True
             previous.rule_number = 310
             two_words_back.is_proposition = True
@@ -424,14 +459,19 @@ def handle_linking_verbs(word_list: List[WordListItem], i: int, speech_mode: boo
     # 311: Causative linking verbs
     # 'make it better' and similar phrases don't count the adjective as a new proposition
     if word.tag in ADJECTIVES:
-        target_item = search_backwards(word_list, i, lambda w: w.lowercase_token in CAUSATIVE_LINKING_VERBS)
+        target_item = search_backwards(
+            word_list, i, lambda w: w.lowercase_token in CAUSATIVE_LINKING_VERBS
+        )
         if target_item is not None:
             word.is_proposition = False
             word.rule_number = 311
 
     return i
 
-def handle_auxiliary_verbs(word_list: List[WordListItem], i: int, speech_mode: bool) -> int:
+
+def handle_auxiliary_verbs(
+    word_list: List[WordListItem], i: int, speech_mode: bool
+) -> int:
     """
     Handle rules related to auxiliary verbs and their interactions with other parts of speech.
 
@@ -489,7 +529,10 @@ def handle_auxiliary_verbs(word_list: List[WordListItem], i: int, speech_mode: b
 
     return i
 
-def handle_constructions_involving_to(word_list: List[WordListItem], i: int, speech_mode: bool) -> int:
+
+def handle_constructions_involving_to(
+    word_list: List[WordListItem], i: int, speech_mode: bool
+) -> int:
     """
     Handle rules related to constructions involving 'to' and adjust proposition counts accordingly.
 
@@ -526,11 +569,12 @@ def handle_constructions_involving_to(word_list: List[WordListItem], i: int, spe
     # "for ... TO VB": "for" is not a proposition
     if word.tag == "VB" and previous.tag == "TO":
         # Search back up to 10 words, but not across a sentence end.
-        target_item = search_backwards(word_list, i, lambda w: w.lowercase_token == "for")
+        target_item = search_backwards(
+            word_list, i, lambda w: w.lowercase_token == "for"
+        )
         if target_item is not None:
             target_item.is_proposition = False
             target_item.rule_number = 511
-
 
     # 512
     # "From" and "to" form a single proposition with
@@ -545,6 +589,7 @@ def handle_constructions_involving_to(word_list: List[WordListItem], i: int, spe
     #   b[i].rulenumber = 512
 
     return i
+
 
 def handle_fillers(word_list: List[WordListItem], i: int, speech_mode: bool) -> int:
     """
@@ -574,7 +619,7 @@ def handle_fillers(word_list: List[WordListItem], i: int, speech_mode: bool) -> 
     """
     if not speech_mode:
         return i
-    
+
     # Rule group 600 - Fillers
     word = word_list[i]
     previous = word_list[i - 1]
@@ -623,28 +668,28 @@ def handle_fillers(word_list: List[WordListItem], i: int, speech_mode: bool) -> 
             word.rule_number = 634
 
     return i
-    
+
 
 def apply_idea_counting_rules(word_list: List[WordListItem], speech_mode: bool) -> None:
     """
     This loop iterates through the WordList and may add and remove items.
-    
+
     The rules look back toward the beginning from the current word; that is,
     the rule is triggered by the last word in the pattern that it is looking for.
     There are guaranteed to be 10 null items at the beginning of the WordList,
     so rules do not have to worry about going past the beginning of the list.
-    
+
     Most rules look at the output of prior rules; rule 200 is a good example
     of this. The program could be speeded up by identifying rules that do *not*
     feed a subsequent rule, and putting a "continue" statement in them, as in
     rule 000.
-    
+
     When an addition or deletion to the WordList is to be made, it must take
     place AFTER the current location (e.g., when looking at b[i] you can add
     or delete at i+1 but not at i-1), to prevent renumbering. Rules 003 and 004
     contain examples of stepping backward and deleting forward.
-    
-    A deletion removes the item from the word count as well as the idea count. 
+
+    A deletion removes the item from the word count as well as the idea count.
     Accordingly, items should only be deleted if they've been moved or should not be counted as words.
     """
     i = 0
@@ -655,12 +700,17 @@ def apply_idea_counting_rules(word_list: List[WordListItem], speech_mode: bool) 
             i += 1
             continue
 
-        i = identify_words_and_adjust_tags(word_list, i, speech_mode)
-        i = adjust_word_order(word_list, i, speech_mode)
-        i = identify_potential_propositions(word_list, i, speech_mode)
-        i = handle_linking_verbs(word_list, i, speech_mode)
-        i = handle_auxiliary_verbs(word_list, i, speech_mode)
-        i = handle_constructions_involving_to(word_list, i, speech_mode)
-        i = handle_fillers(word_list, i, speech_mode)
+        rule_functions: List[Callable[[List[WordListItem], int, bool], int]] = [
+            identify_words_and_adjust_tags,
+            adjust_word_order,
+            identify_potential_propositions,
+            handle_linking_verbs,
+            handle_auxiliary_verbs,
+            handle_constructions_involving_to,
+            handle_fillers,
+        ]
+
+        for rule_function in rule_functions:
+            i = rule_function(word_list, i, speech_mode)
 
         i += 1

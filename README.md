@@ -12,14 +12,6 @@ Idea density, also known as propositional density, is a measure of the amount of
 
 ## Installation
 
-To install pycpidr, you can use pip:
-
-```bash
-pip install pycpidr
-```
-
-Alternatively, you can install from source:
-
 ```bash
 git clone https://github.com/yourusername/PyCPIDR.git
 cd pycpidr

@@ -1,12 +1,12 @@
-import sys
+import argparse
 from pycpidr.idea_density_rater import rate_text
 
 
-def main(text):
-    _, _, density, word_list = rate_text(text, speech_mode=False)
+def main(text, speech_mode):
+    _, _, density, word_list = rate_text(text, speech_mode=speech_mode)
 
     print(f"Density: {density}")
-    print(f"Word list:")
+    print("Word list:")
     for word in word_list.items:
         print(
             f"Token: [{word.token}], tag: [{word.tag}], is_word: [{word.is_word}], is_prop: [{word.is_prop}], rule_number: [{word.rule_number}]"
@@ -14,4 +14,12 @@ def main(text):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    parser = argparse.ArgumentParser(
+        description="Calculate idea density of a given text."
+    )
+    parser.add_argument("text", nargs="+", help="The text to analyze")
+    parser.add_argument("--speech-mode", action="store_true", help="Enable speech mode")
+    args = parser.parse_args()
+
+    text = " ".join(args.text)
+    main(text, args.speech_mode)

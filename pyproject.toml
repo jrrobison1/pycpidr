@@ -5,8 +5,8 @@ description = "Python port of the CPIDR 3.2 idea density rater."
 authors = ["Jason Robison <jrrobison@protonmail.com>"]
 readme = "README.md"
 license = "GNU GPLv2"
-homepage = "https://github.com/yourusername/PyCPIDR"
-repository = "https://github.com/yourusername/PyCPIDR"
+homepage = "https://github.com/jrrobison1/PyCPIDR"
+repository = "https://github.com/jrrobison1/PyCPIDR"
 keywords = ["nlp", "idea density", "linguistics"]
 classifiers = [
     "Development Status :: 3 - Alpha",

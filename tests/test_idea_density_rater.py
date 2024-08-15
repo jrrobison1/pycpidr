@@ -15,7 +15,9 @@ import pytest
 
 import spacy
 from pycpidr.idea_density_rater import rate_text
+from unittest.mock import patch
 
+from pycpidr.word_item import WordList
 
 nlp = spacy.load("en_core_web_sm")
 
@@ -263,6 +265,7 @@ def test_empty_text():
     assert proposition_count == 0
     assert idea_density == pytest.approx(0.0, abs=1e-3)
 
+
 def test_two_numbers():
     text = "This is 1 2 a sentence with numbers."
 
@@ -271,6 +274,7 @@ def test_two_numbers():
     assert word_count == 7
     assert proposition_count == 4
     assert idea_density == pytest.approx(0.571, abs=1e-3)
+
 
 def test_one_word():
     text = "Are"
@@ -281,6 +285,7 @@ def test_one_word():
     assert proposition_count == 1
     assert idea_density == pytest.approx(1.0, abs=1e-3)
 
+
 def test_fraction():
     text = "This is a sentence with 1 / 2 of a fraction."
 
@@ -289,6 +294,7 @@ def test_fraction():
     assert word_count == 9
     assert proposition_count == 5
     assert idea_density == pytest.approx(0.556, abs=1e-3)
+
 
 def test_one_number():
     text = "4"
@@ -299,3 +305,20 @@ def test_one_number():
     assert proposition_count == 0
     assert idea_density == pytest.approx(0.0, abs=1e-3)
 
+
+@pytest.fixture(scope="module")
+def mock_apply_idea_counting_rules():
+    with patch(
+        "pycpidr.idea_density_rater.apply_idea_counting_rules"
+    ) as mock_apply_rules:
+        yield mock_apply_rules
+
+
+def test_rate_text_with_exception(mock_apply_idea_counting_rules):
+    text = "This is a test sentence."
+
+    mock_apply_idea_counting_rules.side_effect = Exception("Mocked exception")
+
+    result = rate_text(text)
+
+    assert result == (0, 0, 0.0, None)

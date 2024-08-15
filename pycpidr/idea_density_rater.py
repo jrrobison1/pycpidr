@@ -1,10 +1,16 @@
-from typing import Tuple
+import logging
+from typing import Tuple, Optional
 from pycpidr.idea_density_rater_rules import apply_idea_counting_rules
 from pycpidr.tagger import tag_text
 from pycpidr.word_item import WordList
 
+# Create a logger for this module
+logger = logging.getLogger(__name__)
 
-def rate_text(text: str, speech_mode: bool = False) -> Tuple[int, int, float, WordList]:
+
+def rate_text(
+    text: str, speech_mode: bool = False
+) -> Tuple[int, int, float, Optional[WordList]]:
     """
     Rate the idea density of the given text.
 
@@ -22,14 +28,18 @@ def rate_text(text: str, speech_mode: bool = False) -> Tuple[int, int, float, Wo
     if text is None:
         return 0, 0, 0.0, WordList([])
 
-    tagged_text = tag_text(text)
-    word_list = WordList(tagged_text)
-    apply_idea_counting_rules(word_list.items, speech_mode)
+    try:
+        tagged_text = tag_text(text)
+        word_list = WordList(tagged_text)
+        apply_idea_counting_rules(word_list.items, speech_mode)
 
-    word_count, proposition_count = count_words_and_propositions(word_list)
-    density = proposition_count / word_count if word_count > 0 else 0.0
+        word_count, proposition_count = count_words_and_propositions(word_list)
+        density = proposition_count / word_count if word_count > 0 else 0.0
 
-    return word_count, proposition_count, density, word_list
+        return word_count, proposition_count, density, word_list
+    except Exception as e:
+        logger.exception("An error occurred while processing the text")
+        return 0, 0, 0.0, None
 
 
 def count_words_and_propositions(word_list: WordList) -> Tuple[int, int]:

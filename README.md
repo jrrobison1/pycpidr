@@ -1,5 +1,5 @@
 # pycpidr
-[![PyPI - Version](https://img.shields.io/pypi/v/pycpidr?link=https%3A%2F%2Fpypi.org%2Fproject%2Fpycpidr%2F)](https://pypi.org/project/pycpidr/)
+[![PyPI - Version](https://img.shields.io/pypi/v/pycpidr?link=https%3A%2F%2Fpypi.org%2Fproject%2Fpycpidr%2F)](https://pypi.org/project/pycpidr/) [![Unit Tests](https://github.com/jrrobison1/pycpidr/actions/workflows/unit_tests.yml/badge.svg)](https://github.com/jrrobison1/pycpidr/actions/workflows/unit_tests.yml) 
 
 Python library port of the Computerized Propositional Idea Density Rater (CPIDR) 3.2.
 

@@ -19,7 +19,12 @@ from unittest.mock import patch
 
 from pycpidr.word_item import WordList
 
-nlp = spacy.load("en_core_web_sm")
+try:
+    nlp = spacy.load("en_core_web_sm")
+except OSError:
+    raise OSError(
+        "The 'en_core_web_sm' model is not installed. Please install it using: `python -m spacy download en_core_web_sm`."
+    )
 
 
 def test_turner_greene_sentence_1():

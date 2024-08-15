@@ -1,7 +1,5 @@
 # pycpidr
 
-[![PyPI version](https://badge.fury.io/py/pycpidr.svg)](https://badge.fury.io/py/pycpidr)
-
 Python library port of the Computerized Propositional Idea Density Rater (CPIDR) 3.2.
 
 pycpidr is a Python library that determines the propositional idea density of an English text automatically. This project is a port of the original CPIDR 3.2 software, which was written in C#, to Python for use as a library. The goal is to make this functionality more accessible to Python developers and researchers.

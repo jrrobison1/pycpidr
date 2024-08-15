@@ -10,10 +10,23 @@ Idea density, also known as propositional density, is a measure of the amount of
 
 ## Installation
 
+### Using pip
+1. Install the package
 ```bash
-git clone https://github.com/yourusername/PyCPIDR.git
-cd pycpidr
-pip install .
+pip install pycpidr
+```
+
+2. Download the required spaCy model:
+```bash
+pip install pycpidr[spacy_model]
+OR
+python -m spacy download en_core_web_sm
+```
+
+### Using poetry
+
+```bash
+poetry add pycpidr --extras "spacy_model"
 ```
 
 ## Usage
@@ -56,10 +69,10 @@ PyCPIDR supports a speech mode that handles common speech patterns and fillers d
 To set up the development environment:
 
 1. Clone the repository
-2. Create a virtual environment: `python -m venv venv`
-3. Activate the virtual environment
-4. Install development dependencies: `pip install -e ".[dev]"`
-5. Install the required spaCy model: `python -m spacy download en_core_web_sm`
+2. Install Poetry if you haven't already: `pip install poetry`
+3. Install project dependencies: `poetry install`
+4. Install the required spaCy model: `poetry run python -m spacy download en_core_web_sm`
+5. Activate the virtual environment: `poetry shell`
 
 ## Running Tests
 
@@ -74,7 +87,7 @@ Because this port uses spaCy as a part-of-speech tagger instead of the original 
 This project: 434 propositions. 0.512 idea density
 CPIDR 3.2: 436 propositions. 0.515 idea density
 
-For more information about the original CPIDR 3.2, please visit [CPIDR's official page](http://ai1.ai.uga.edu/caspr/CPIDR.html).
+For more information about the original CPIDR 3.2, please visit [CASPR's official page](http://ai1.ai.uga.edu/caspr/).
 
 ## Contributing
 

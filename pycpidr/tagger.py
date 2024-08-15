@@ -12,7 +12,12 @@ def get_nlp():
     """
     global _nlp
     if _nlp is None:
-        _nlp = spacy.load("en_core_web_sm")
+        try:
+            _nlp = spacy.load("en_core_web_sm")
+        except OSError:
+            raise OSError(
+                "The 'en_core_web_sm' model is not installed. Please install it using: `pip install pycpidr[spacy_model]` or `python -m spacy download en_core_web_sm`."
+            )
     return _nlp
 
 

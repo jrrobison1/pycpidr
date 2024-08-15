@@ -18,15 +18,14 @@ pip install pycpidr
 
 2. Download the required spaCy model:
 ```bash
-pip install pycpidr[spacy_model]
-OR
 python -m spacy download en_core_web_sm
 ```
 
 ### Using poetry
 
 ```bash
-poetry add pycpidr --extras "spacy_model"
+poetry add pycpidr
+python -m spacy download en_core_web_sm
 ```
 
 ## Usage

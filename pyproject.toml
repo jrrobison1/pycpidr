@@ -17,12 +17,6 @@ classifiers = [
 ]
 packages = [{ include = "pycpidr" }]
 
-[tool.poetry.extras]
-spacy_model = [
-    "spacy",
-    "https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.7.1/en_core_web_sm-3.7.1-py3-none-any.whl",
-]
-
 [tool.poetry.dependencies]
 python = "^3.10"
 spacy = "^3.7.5"

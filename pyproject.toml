@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "pycpidr"
 version = "0.1.0"
-description = "Python port of the CPIDR 3.2 idea density rater."
+description = "Python port of the Computerized Propositional Idea Density Rater (CPIDR) 3.2."
 authors = ["Jason Robison <jrrobison@protonmail.com>"]
 readme = "README.md"
 license = "GNU GPLv2"

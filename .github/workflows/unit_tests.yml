@@ -1,4 +1,4 @@
-name: Python Tests
+name: Unit Tests
 
 on:
   push:
@@ -30,4 +30,4 @@ jobs:
           poetry run python -m spacy download en_core_web_sm
       - name: Run tests
         run: |
-          poetry run pytest -v tests/ --cov=./ --cov-report=xml
+          poetry run pytest -v tests/

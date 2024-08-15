@@ -1,5 +1,5 @@
 # pycpidr
-[![PyPI version](https://badge.fury.io/py/pycpidr.svg)](https://badge.fury.io/py/pycpidr)
+[![PyPI version](https://img.shields.io/py/pycpidr.svg)](https://img.shields.io/py/pycpidr)
 
 Python library port of the Computerized Propositional Idea Density Rater (CPIDR) 3.2.
 

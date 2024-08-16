@@ -5,6 +5,7 @@ from pycpidr.idea_density_rater_rules import (
     identify_potential_propositions,
     handle_linking_verbs,
     handle_auxiliary_verbs,
+    handle_constructions_involving_to,
 )
 from pycpidr.word_item import WordListItem
 from pycpidr.utils.constants import (
@@ -451,3 +452,66 @@ def test_rule_405_with_different_adverbs(create_word_list):
         handle_auxiliary_verbs(word_list, FIRST_WORD_INDEX + 2, False)
         assert word_list[FIRST_WORD_INDEX].is_proposition == False
         assert word_list[FIRST_WORD_INDEX].rule_number == 405
+
+
+def test_rule_510_to_vb(create_word_list):
+    word_list = create_word_list([("to", "TO"), ("go", "VB")])
+    handle_constructions_involving_to(word_list, FIRST_WORD_INDEX + 1, False)
+    assert word_list[FIRST_WORD_INDEX].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX].rule_number == 510
+
+
+def test_rule_511_for_to_vb(create_word_list):
+    word_list = create_word_list(
+        [("for", "IN"), ("him", "PRP"), ("to", "TO"), ("go", "VB")]
+    )
+    handle_constructions_involving_to(word_list, FIRST_WORD_INDEX + 3, False)
+    assert word_list[FIRST_WORD_INDEX].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX].rule_number == 511
+
+
+def test_rule_511_for_not_found(create_word_list):
+    word_list = create_word_list([("to", "TO"), ("go", "VB")])
+    handle_constructions_involving_to(word_list, FIRST_WORD_INDEX + 1, False)
+    assert word_list[FIRST_WORD_INDEX].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX].rule_number == 510  # Rule 510 should still apply
+
+
+def test_no_rule_applied(create_word_list):
+    word_list = create_word_list([("he", "PRP"), ("wants", "VBZ")])
+    handle_constructions_involving_to(word_list, FIRST_WORD_INDEX + 1, False)
+    assert word_list[FIRST_WORD_INDEX].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX].rule_number == 0
+    assert word_list[FIRST_WORD_INDEX + 1].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX + 1].rule_number == 0
+
+
+def test_rule_510_not_applied_for_non_vb(create_word_list):
+    word_list = create_word_list([("to", "TO"), ("the", "DT"), ("store", "NN")])
+    handle_constructions_involving_to(word_list, FIRST_WORD_INDEX + 1, False)
+    assert word_list[FIRST_WORD_INDEX].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX].rule_number == 0
+
+
+def test_rule_511_with_longer_phrase(create_word_list):
+    word_list = create_word_list(
+        [
+            ("for", "IN"),
+            ("the", "DT"),
+            ("cat", "NN"),
+            ("to", "TO"),
+            ("chase", "VB"),
+            ("mice", "NNS"),
+        ]
+    )
+    handle_constructions_involving_to(word_list, FIRST_WORD_INDEX + 4, False)
+    assert word_list[FIRST_WORD_INDEX].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX].rule_number == 511
+
+
+def test_speech_mode_parameter(create_word_list):
+    word_list = create_word_list([("to", "TO"), ("go", "VB")])
+    handle_constructions_involving_to(word_list, FIRST_WORD_INDEX + 1, True)
+    assert word_list[FIRST_WORD_INDEX].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX].rule_number == 510
+    # This test ensures that the speech_mode parameter doesn't affect the function's behavior

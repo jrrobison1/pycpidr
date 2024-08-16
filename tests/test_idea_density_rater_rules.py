@@ -2,9 +2,16 @@ import pytest
 from pycpidr.idea_density_rater_rules import (
     adjust_word_order,
     identify_words_and_adjust_tags,
+    identify_potential_propositions,
 )
 from pycpidr.word_item import WordListItem
-from pycpidr.utils.constants import SENTENCE_END, RuleNumber
+from pycpidr.utils.constants import (
+    SENTENCE_END,
+    RuleNumber,
+    DEFAULT_PROPOSITIONS,
+    VERBS,
+    NOUNS,
+)
 
 NUMBER_OF_BLANK_WORD_ITEMS = 10
 FIRST_WORD_INDEX = NUMBER_OF_BLANK_WORD_ITEMS
@@ -14,7 +21,8 @@ FIRST_WORD_INDEX = NUMBER_OF_BLANK_WORD_ITEMS
 def create_word_list():
     def _create_word_list(tokens_and_tags):
         return [WordListItem() for _ in range(NUMBER_OF_BLANK_WORD_ITEMS)] + [
-            WordListItem(token, tag) for token, tag in tokens_and_tags
+            WordListItem(token, tag, is_word=token[0].isalnum() and tag != "SYM")
+            for token, tag in tokens_and_tags
         ]
 
     return _create_word_list
@@ -213,3 +221,110 @@ def test_new_aux_position_marked_correctly(create_word_list):
     assert new_aux.is_proposition == True
     assert new_aux.is_word == True
     assert new_aux.rule_number == 101
+
+
+def test_default_propositions(create_word_list):
+    word_list = create_word_list([("run", "VB")])
+    identify_potential_propositions(word_list, FIRST_WORD_INDEX, False)
+    assert word_list[FIRST_WORD_INDEX].is_proposition == True
+    assert word_list[FIRST_WORD_INDEX].rule_number == 200
+
+
+def test_articles_not_propositions(create_word_list):
+    word_list = create_word_list([("the", "DT")])
+    identify_potential_propositions(word_list, FIRST_WORD_INDEX, False)
+    assert word_list[FIRST_WORD_INDEX].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX].rule_number == 201
+
+
+def test_correlating_conjunctions(create_word_list):
+    word_list = create_word_list([("either", "CC"), ("or", "CC")])
+    identify_potential_propositions(word_list, FIRST_WORD_INDEX + 1, False)
+    assert word_list[FIRST_WORD_INDEX].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX].rule_number == 203
+
+
+def test_and_then_single_proposition(create_word_list):
+    word_list = create_word_list([("and", "CC"), ("then", "RB")])
+    identify_potential_propositions(word_list, FIRST_WORD_INDEX + 1, False)
+    assert word_list[FIRST_WORD_INDEX + 1].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX + 1].rule_number == 204
+
+
+def test_to_not_proposition_at_sentence_end(create_word_list):
+    word_list = create_word_list([("to", "TO"), (".", SENTENCE_END)])
+    identify_potential_propositions(word_list, FIRST_WORD_INDEX + 1, False)
+    assert word_list[FIRST_WORD_INDEX].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX].rule_number == 206
+
+
+def test_modal_proposition_at_sentence_end(create_word_list):
+    word_list = create_word_list([("can", "MD"), (".", SENTENCE_END)])
+    identify_potential_propositions(word_list, FIRST_WORD_INDEX + 1, False)
+    assert word_list[FIRST_WORD_INDEX].is_proposition == True
+    assert word_list[FIRST_WORD_INDEX].rule_number == 207
+
+
+def test_cardinal_number_proposition(create_word_list):
+    word_list = create_word_list([("3", "CD"), ("cats", "NNS")])
+    identify_potential_propositions(word_list, FIRST_WORD_INDEX, False)
+    assert word_list[FIRST_WORD_INDEX].is_proposition == True
+    assert word_list[FIRST_WORD_INDEX].rule_number == 210
+
+
+def test_cardinal_number_not_proposition(create_word_list):
+    word_list = create_word_list([("1941", "CD"), ("was", "VBD")])
+    identify_potential_propositions(word_list, FIRST_WORD_INDEX, False)
+    assert word_list[FIRST_WORD_INDEX].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX].rule_number == 210
+
+
+def test_negative_polarity_not_unless(create_word_list):
+    word_list = create_word_list([("not", "NOT"), ("go", "VB"), ("unless", "IN")])
+    identify_potential_propositions(word_list, FIRST_WORD_INDEX + 2, False)
+    assert word_list[FIRST_WORD_INDEX].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX].rule_number == 211
+
+
+def test_negative_polarity_not_any(create_word_list):
+    word_list = create_word_list([("not", "NOT"), ("any", "DT")])
+    identify_potential_propositions(word_list, FIRST_WORD_INDEX + 1, False)
+    assert word_list[FIRST_WORD_INDEX + 1].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX + 1].rule_number == 212
+
+
+def test_going_to_before_verb(create_word_list):
+    word_list = create_word_list([("going", "VBG"), ("to", "TO"), ("run", "VB")])
+    identify_potential_propositions(word_list, FIRST_WORD_INDEX + 2, False)
+    assert word_list[FIRST_WORD_INDEX].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX + 1].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX].rule_number == 213
+    assert word_list[FIRST_WORD_INDEX + 1].rule_number == 213
+
+
+def test_if_then_single_conjunction(create_word_list):
+    word_list = create_word_list(
+        [("if", "IN"), ("it", "PRP"), ("rains", "VBZ"), ("then", "RB"), ("stay", "VB")]
+    )
+    identify_potential_propositions(word_list, FIRST_WORD_INDEX + 4, False)
+    assert word_list[FIRST_WORD_INDEX + 3].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX + 3].rule_number == 214
+
+
+def test_each_other_as_pronoun(create_word_list):
+    word_list = create_word_list([("each", "DT"), ("other", "JJ")])
+    identify_potential_propositions(word_list, FIRST_WORD_INDEX + 1, False)
+    assert word_list[FIRST_WORD_INDEX].tag == "PRP"
+    assert word_list[FIRST_WORD_INDEX + 1].tag == "PRP"
+    assert word_list[FIRST_WORD_INDEX].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX + 1].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX].rule_number == 225
+    assert word_list[FIRST_WORD_INDEX + 1].rule_number == 225
+
+
+def test_how_come_single_proposition(create_word_list):
+    word_list = create_word_list([("how", "WRB"), ("come", "VB")])
+    identify_potential_propositions(word_list, FIRST_WORD_INDEX + 1, False)
+    assert word_list[FIRST_WORD_INDEX + 1].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX + 1].tag == "WRB"
+    assert word_list[FIRST_WORD_INDEX + 1].rule_number == 230

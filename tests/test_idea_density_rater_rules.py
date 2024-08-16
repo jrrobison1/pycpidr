@@ -422,7 +422,7 @@ def test_rule_405_aux_adverb_verb(create_word_list):
     assert word_list[FIRST_WORD_INDEX].rule_number == 405
 
 
-def test_no_rule_applied(create_word_list):
+def test_no_400_rule_applied(create_word_list):
     word_list = create_word_list([("cat", "NN"), ("runs", "VBZ")])
     handle_auxiliary_verbs(word_list, FIRST_WORD_INDEX + 1, False)
     assert word_list[FIRST_WORD_INDEX].is_proposition == False

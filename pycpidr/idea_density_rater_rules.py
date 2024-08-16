@@ -161,7 +161,7 @@ def identify_words_and_adjust_tags(
     # 'that/DT' or 'this/DT' is a pronoun, not a determiner, if the word following it
     # is any kind of verb or adverb.
     if (previous.lowercase_token == "that" or previous.lowercase_token == "this") and (
-        word in VERBS or word in ADVERBS
+        word.tag in VERBS or word.tag in ADVERBS
     ):
         previous.tag = "PRP"
         previous.rule_number = 54

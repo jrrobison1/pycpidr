@@ -121,8 +121,8 @@ def test_turner_greene_sentence_9():
     word_count, proposition_count, idea_density, word_list = rate_text(sentence, nlp)
 
     assert word_count == 25
-    assert proposition_count == 11
-    assert idea_density == pytest.approx(0.44, abs=1e-3)
+    assert proposition_count == 10
+    assert idea_density == pytest.approx(0.4, abs=1e-3)
 
 
 def test_turner_greene_sentence_10():
@@ -226,8 +226,8 @@ def test_turner_1987_passage_2():
     assert word_count == 362
 
     # Note: The original CPIDR 3.2 finds 191 propositions
-    assert proposition_count == 188
-    assert idea_density == pytest.approx(0.519, abs=1e-3)
+    assert proposition_count == 187
+    assert idea_density == pytest.approx(0.516, abs=1e-3)
 
 
 def test_turner_1987_passage_3():
@@ -251,8 +251,8 @@ def test_turner_1987_passage_3():
     word_count, proposition_count, idea_density, word_list = rate_text(text, nlp)
 
     assert word_count == 210
-    assert proposition_count == 106
-    assert idea_density == pytest.approx(0.505, abs=1e-3)
+    assert proposition_count == 105
+    assert idea_density == pytest.approx(0.5, abs=1e-3)
 
 
 def test_empty_text():
@@ -281,8 +281,8 @@ def test_two_numbers():
     word_count, proposition_count, idea_density, word_list = rate_text(text, nlp)
 
     assert word_count == 7
-    assert proposition_count == 4
-    assert idea_density == pytest.approx(0.571, abs=1e-3)
+    assert proposition_count == 3
+    assert idea_density == pytest.approx(0.429, abs=1e-3)
 
 
 def test_one_word():
@@ -301,8 +301,8 @@ def test_fraction():
     word_count, proposition_count, idea_density, word_list = rate_text(text, nlp)
 
     assert word_count == 9
-    assert proposition_count == 5
-    assert idea_density == pytest.approx(0.556, abs=1e-3)
+    assert proposition_count == 4
+    assert idea_density == pytest.approx(0.444, abs=1e-3)
 
 
 def test_one_number():

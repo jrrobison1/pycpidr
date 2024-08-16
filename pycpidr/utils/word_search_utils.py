@@ -2,6 +2,7 @@ from typing import Callable, List, Optional
 
 from pycpidr.word_item import WordListItem
 from pycpidr.utils.constants import SENTENCE_END
+from Levenshtein import ratio
 
 MAX_LOOKBACK = 10
 
@@ -29,20 +30,42 @@ def beginning_of_sentence(word_list_items: List[WordListItem], i: int) -> int:
     return 0
 
 
-def is_repetition(first: str, second: str) -> bool:
+def is_repetition(first: str, second: str, threshold: float = 0.8) -> bool:
     """
-    Determines whether a word is likely to be a repetition of another.
-    The first word may be incomplete, e.g. "hesi- hesitation".
+    Determines whether a word is likely to be a repetition of another using a similarity score.
+
+    Args:
+        first (str): The first word (potentially incomplete).
+        second (str): The second word to compare against.
+        threshold (float): The similarity threshold (0.0 to 1.0) for considering words as repetitions.
+
+    Returns:
+        bool: True if the words are considered repetitions, False otherwise.
     """
     if not first or not second:
         return False
+
+    first = first.lower()
+    second = second.lower()
+
     if first == second:
         return True
+
+    # Handle potential incomplete words (e.g., "hesi-" for "hesitation")
     if first.endswith("-"):
-        first = first[:-1]  # final hyphen drop
-    if len(second) > 3 and first not in ("a", "an") and second.startswith(first):
-        return True
-    return False
+        first = first[:-1]
+        return second.startswith(first) and len(second) - len(first) <= 6
+
+    # Calculate similarity score
+    similarity = ratio(first, second)
+
+    # Check if similarity exceeds threshold and words are not common short words
+    return (
+        similarity >= threshold
+        and len(first) > 3
+        and first
+        not in ("the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for")
+    )
 
 
 def search_backwards(

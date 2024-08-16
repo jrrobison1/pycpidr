@@ -11,13 +11,14 @@ Total Actual found in thiss python port:
     0.512 idea density
 """
 
-import pytest
-
-import spacy
-from pycpidr.idea_density_rater import rate_text
 from unittest.mock import patch
 
-from pycpidr.word_item import WordList
+import pytest
+import spacy
+
+from pycpidr.idea_density_rater import count_words_and_propositions, rate_text
+from pycpidr.tagger import tag_text
+from pycpidr.word_item import WordListItem, WordList
 
 try:
     nlp = spacy.load("en_core_web_sm")
@@ -327,3 +328,63 @@ def test_rate_text_with_exception(mock_apply_idea_counting_rules):
     result = rate_text(text)
 
     assert result == (0, 0, 0.0, None)
+
+
+@patch("spacy.load")
+def test_spacy_model_not_found(mock_spacy_load):
+    mock_spacy_load.side_effect = OSError("Model 'en_core_web_sm' not found.")
+
+    with pytest.raises(OSError) as excinfo:
+        tag_text("This is a test sentence.")
+
+    assert "The 'en_core_web_sm' model is not installed." in str(excinfo.value)
+    assert "Please install it using: `python -m spacy download en_core_web_sm`" in str(
+        excinfo.value
+    )
+
+
+@pytest.mark.parametrize(
+    "invalid_input",
+    [
+        None,
+        ["list", "is", "invalid"],
+        {"dictionary": "invalid"},
+    ],
+)
+def test_tag_text_invalid_input(invalid_input):
+    with pytest.raises(TypeError):
+        tag_text(invalid_input)
+
+
+def test_count_words_and_propositions_empty_list():
+    word_list = WordList([])
+    word_count, proposition_count = count_words_and_propositions(word_list)
+    assert word_count == 0
+    assert proposition_count == 0
+
+
+def test_count_words_and_propositions_only_non_words():
+    word_list = WordList([("placeholder", "placeholder")])
+    word_list.items.append(WordListItem("", "PUNCT", is_word=False))
+    word_list.items.append(WordListItem("", "SPACE", is_word=False))
+    word_list.items.append(WordListItem("", "SYM", is_word=False))
+
+    word_count, proposition_count = count_words_and_propositions(word_list)
+
+    assert word_count == 0
+    assert proposition_count == 0
+
+
+def test_count_words_and_propositions_only_propositions():
+    word_list = WordList([("placeholder", "placeholder")])
+    word_list.items.pop()
+    word_list.items.append(
+        WordListItem("run", "VERB", is_proposition=True, is_word=True)
+    )
+    word_list.items.append(
+        WordListItem("fast", "ADV", is_proposition=True, is_word=True)
+    )
+
+    word_count, proposition_count = count_words_and_propositions(word_list)
+    assert word_count == 2
+    assert proposition_count == 2

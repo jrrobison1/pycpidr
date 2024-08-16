@@ -33,6 +33,9 @@ def tag_text(text, nlp=None):
     Returns:
         list of tuple: A list of (token, tag) pairs for each token in the input text.
     """
+    if not isinstance(text, str):
+        raise TypeError("Input text must be a string.")
+
     if nlp is None:
         nlp = get_nlp()
 

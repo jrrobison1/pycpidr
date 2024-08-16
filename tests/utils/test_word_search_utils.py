@@ -1,5 +1,10 @@
 import pytest
-from pycpidr.utils.word_search_utils import beginning_of_sentence, is_repetition
+from pycpidr.utils.word_search_utils import (
+    beginning_of_sentence,
+    is_repetition,
+    search_backwards,
+    MAX_LOOKBACK,
+)
 from pycpidr.word_item import WordListItem
 from pycpidr.utils.constants import SENTENCE_END
 
@@ -84,3 +89,35 @@ def test_is_repetition():
 
     # Test words that start the same but aren't repetitions
     assert is_repetition("car", "carpet") == False
+
+
+def test_search_backwards():
+    assert search_backwards([], 0, lambda x: True) is None
+
+    words = create_word_list(["First", "Second"], ["TAG1", "TAG2"])
+    assert search_backwards(words, 0, lambda x: True) is None
+
+    words = create_word_list(
+        ["Word"] * (MAX_LOOKBACK + 1), ["TAG"] * (MAX_LOOKBACK + 1)
+    )
+    assert (
+        search_backwards(words, MAX_LOOKBACK, lambda x: x.tag == "NONEXISTENT") is None
+    )
+
+    words = create_word_list(
+        ["Target", "A", "B", "C", "D"], ["TARGET", "TAG", "TAG", "TAG", "TAG"]
+    )
+    assert search_backwards(words, 4, lambda x: x.tag == "TARGET").token == "Target"
+
+    words = create_word_list(["A", ".", "B", "C"], ["TAG", SENTENCE_END, "TAG", "TAG"])
+    assert search_backwards(words, 3, lambda x: x.tag == "TAG").token == "B"
+
+    words = create_word_list(["A", "B", "Target"], ["TAG", "TAG", "TARGET"])
+    assert search_backwards(words, 2, lambda x: x.tag == "TAG").token == "B"
+
+    words = create_word_list(["A", "B", "Target", "C", "D"], ["TAG"] * 5)
+    assert search_backwards(words, 4, lambda x: x.token == "Target").token == "Target"
+
+    words = create_word_list(["A", "B", "C"], ["TAG"] * 3)
+    with pytest.raises(IndexError):
+        search_backwards(words, 10, lambda x: True)

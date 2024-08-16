@@ -639,7 +639,7 @@ def handle_fillers(word_list: List[WordListItem], i: int, speech_mode: bool) -> 
 
     # 610
     # A sentence consisting entirely of probable filler words is propositionless
-    if speech_mode and word.tag == SENTENCE_END:
+    if word.tag == SENTENCE_END:
         bos = beginning_of_sentence(word_list, i)
         k = 0
         for j in range(bos, i):
@@ -654,31 +654,25 @@ def handle_fillers(word_list: List[WordListItem], i: int, speech_mode: bool) -> 
 
     # 632
     # In speech mode, "like" is a filler when not immediately preceded by a form of "be".
-    if speech_mode:
-        if word.lowercase_token == "like" and previous.lowercase_token not in BE:
-            word.tag = ""
-            word.is_proposition = False
-            word.rule_number = 632
+    if word.lowercase_token == "like" and previous.lowercase_token not in BE:
+        word.tag = ""
+        word.is_proposition = False
+        word.rule_number = 632
 
     # 634
     # In speech mode, "you know" is a filler and counts as one word, not two.
-    if speech_mode:
-        if (
-            i > 0
-            and previous.lowercase_token == "you"
-            and word.lowercase_token == "know"
-        ):
-            i -= 1
-            word = word_list[i]
-            previous = word_list[i - 1]
-            two_words_back = word_list[i - 2]
-            del word_list[i + 1]
-            # reset data for the current item
-            word.token = "you_know"
-            word.tag = ""
-            word.is_proposition = False
-            word.is_word = True
-            word.rule_number = 634
+    if i > 0 and previous.lowercase_token == "you" and word.lowercase_token == "know":
+        i -= 1
+        word = word_list[i]
+        previous = word_list[i - 1]
+        two_words_back = word_list[i - 2]
+        del word_list[i + 1]
+        # reset data for the current item
+        word.token = "you_know"
+        word.tag = ""
+        word.is_proposition = False
+        word.is_word = True
+        word.rule_number = 634
 
     return i
 

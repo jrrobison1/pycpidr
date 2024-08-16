@@ -3,6 +3,7 @@ from pycpidr.idea_density_rater_rules import (
     adjust_word_order,
     identify_words_and_adjust_tags,
     identify_potential_propositions,
+    handle_linking_verbs,
 )
 from pycpidr.word_item import WordListItem
 from pycpidr.utils.constants import (
@@ -11,6 +12,11 @@ from pycpidr.utils.constants import (
     DEFAULT_PROPOSITIONS,
     VERBS,
     NOUNS,
+    LINKING_VERBS,
+    BE,
+    ADJECTIVES,
+    ADVERBS,
+    CAUSATIVE_LINKING_VERBS,
 )
 
 NUMBER_OF_BLANK_WORD_ITEMS = 10
@@ -328,3 +334,58 @@ def test_how_come_single_proposition(create_word_list):
     assert word_list[FIRST_WORD_INDEX + 1].is_proposition == False
     assert word_list[FIRST_WORD_INDEX + 1].tag == "WRB"
     assert word_list[FIRST_WORD_INDEX + 1].rule_number == 230
+
+
+def test_rule_301_linking_verb_not_proposition(create_word_list):
+    word_list = create_word_list([("is", "VBZ"), ("happy", "JJ")])
+    handle_linking_verbs(word_list, FIRST_WORD_INDEX + 1, False)
+    assert word_list[FIRST_WORD_INDEX].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX].rule_number == 301
+
+
+def test_rule_302_be_not_proposition_before_preposition(create_word_list):
+    word_list = create_word_list([("is", "VBZ"), ("in", "IN")])
+    handle_linking_verbs(word_list, FIRST_WORD_INDEX + 1, False)
+    assert word_list[FIRST_WORD_INDEX].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX].rule_number == 302
+
+
+def test_rule_310_linking_verb_adverb_determiner(create_word_list):
+    word_list = create_word_list([("is", "VBZ"), ("now", "RB"), ("the", "DT")])
+    handle_linking_verbs(word_list, FIRST_WORD_INDEX + 2, False)
+    assert word_list[FIRST_WORD_INDEX].is_proposition == True
+    assert word_list[FIRST_WORD_INDEX].rule_number == 310
+    assert word_list[FIRST_WORD_INDEX + 1].is_proposition == True
+    assert word_list[FIRST_WORD_INDEX + 1].rule_number == 310
+
+
+def test_rule_311_causative_linking_verb(create_word_list):
+    word_list = create_word_list([("make", "VB"), ("it", "PRP"), ("better", "JJR")])
+    handle_linking_verbs(word_list, FIRST_WORD_INDEX + 2, False)
+    assert word_list[FIRST_WORD_INDEX + 2].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX + 2].rule_number == 311
+
+
+def test_no_rule_applied(create_word_list):
+    word_list = create_word_list([("cat", "NN"), ("runs", "VBZ")])
+    handle_linking_verbs(word_list, FIRST_WORD_INDEX + 1, False)
+    assert word_list[FIRST_WORD_INDEX].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX].rule_number is 0
+    assert word_list[FIRST_WORD_INDEX + 1].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX + 1].rule_number is 0
+
+
+def test_rule_301_with_adverb(create_word_list):
+    word_list = create_word_list([("is", "VBZ"), ("quickly", "RB")])
+    handle_linking_verbs(word_list, FIRST_WORD_INDEX + 1, False)
+    assert word_list[FIRST_WORD_INDEX].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX].rule_number == 301
+
+
+def test_rule_310_with_predeterminer(create_word_list):
+    word_list = create_word_list([("is", "VBZ"), ("really", "RB"), ("all", "PDT")])
+    handle_linking_verbs(word_list, FIRST_WORD_INDEX + 2, False)
+    assert word_list[FIRST_WORD_INDEX].is_proposition == True
+    assert word_list[FIRST_WORD_INDEX].rule_number == 310
+    assert word_list[FIRST_WORD_INDEX + 1].is_proposition == True
+    assert word_list[FIRST_WORD_INDEX + 1].rule_number == 310

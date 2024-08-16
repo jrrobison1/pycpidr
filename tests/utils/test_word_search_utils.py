@@ -8,63 +8,88 @@ from pycpidr.utils.word_search_utils import (
 from pycpidr.word_item import WordListItem
 from pycpidr.utils.constants import SENTENCE_END
 
+NUMBER_OF_BLANK_WORD_ITEMS = 10
+FIRST_WORD_INDEX = 10
 
-def create_word_list(tokens, tags):
-    return [WordListItem(token=t, tag=tag) for t, tag in zip(tokens, tags)]
+
+@pytest.fixture
+def create_word_list():
+    def _create_word_list(tokens_and_tags):
+        return [WordListItem() for _ in range(NUMBER_OF_BLANK_WORD_ITEMS)] + [
+            WordListItem(token, tag) for token, tag in tokens_and_tags
+        ]
+
+    return _create_word_list
 
 
-def test_beginning_of_sentence_middle():
+def test_beginning_of_sentence_middle(create_word_list):
     words = create_word_list(
-        ["This", "is", "a", "sentence", ".", "Another", "one", "."],
         [
-            "PLC_TAG",
-            "PLC_TAG",
-            "PLC_TAG",
-            "PLC_TAG",
-            SENTENCE_END,
-            "PLC_TAG",
-            "PLC_TAG",
-            SENTENCE_END,
-        ],
+            ("This", "PLC_TAG"),
+            ("is", "PLC_TAG"),
+            ("a", "PLC_TAG"),
+            ("sentence", "PLC_TAG"),
+            (".", SENTENCE_END),
+            ("Another", "PLC_TAG"),
+            ("one", "PLC_TAG"),
+            (".", SENTENCE_END),
+        ]
     )
-    assert beginning_of_sentence(words, 6) == 5
+
+    assert beginning_of_sentence(words, FIRST_WORD_INDEX + 6) == FIRST_WORD_INDEX + 5
 
 
-def test_beginning_of_sentence_start():
+def test_beginning_of_sentence_start(create_word_list):
     words = create_word_list(
-        ["This", "is", "a", "sentence", "."],
-        ["PLC_TAG", "PLC_TAG", "PLC_TAG", "PLC_TAG", SENTENCE_END],
-    )
-    assert beginning_of_sentence(words, 2) == 0
-
-
-def test_beginning_of_sentence_end():
-    words = create_word_list(
-        ["This", "is", "a", "sentence", "."],
-        ["PLC_TAG", "PLC_TAG", "PLC_TAG", "PLC_TAG", SENTENCE_END],
-    )
-    assert beginning_of_sentence(words, 4) == 0
-
-
-def test_beginning_of_sentence_single_word():
-    words = create_word_list(["Word"], [""])
-    assert beginning_of_sentence(words, 0) == 0
-
-
-def test_beginning_of_sentence_multiple_sentences():
-    words = create_word_list(
-        ["First", ".", "Second", ".", "Third", "sentence", "."],
         [
-            "PLC_TAG",
-            SENTENCE_END,
-            "PLC_TAG",
-            SENTENCE_END,
-            "PLC_TAG",
-            "PLC_TAG",
-            SENTENCE_END,
-        ],
+            ("This", "PLC_TAG"),
+            ("is", "PLC_TAG"),
+            ("a", "PLC_TAG"),
+            ("sentence", "PLC_TAG"),
+            (".", SENTENCE_END),
+        ]
     )
-    assert beginning_of_sentence(words, 5) == 4
+
+    assert beginning_of_sentence(words, FIRST_WORD_INDEX + 2) == FIRST_WORD_INDEX
+
+
+def test_beginning_of_sentence_end(create_word_list):
+    words = create_word_list(
+        [
+            ("This", "PLC_TAG"),
+            ("is", "PLC_TAG"),
+            ("a", "PLC_TAG"),
+            ("sentence", "PLC_TAG"),
+            (".", SENTENCE_END),
+        ]
+    )
+
+    assert beginning_of_sentence(words, FIRST_WORD_INDEX + 4) == FIRST_WORD_INDEX
+
+
+def test_beginning_of_sentence_single_word(create_word_list):
+    words = create_word_list(
+        [
+            ("Word", "PLC_TAG"),
+        ]
+    )
+    assert beginning_of_sentence(words, FIRST_WORD_INDEX) == FIRST_WORD_INDEX
+
+
+def test_beginning_of_sentence_multiple_sentences(create_word_list):
+    words = create_word_list(
+        [
+            ("First", "PLC_TAG"),
+            (".", SENTENCE_END),
+            ("Second", "PLC_TAG"),
+            (".", SENTENCE_END),
+            ("Third", "PLC_TAG"),
+            ("sentence", "PLC_TAG"),
+            (".", SENTENCE_END),
+        ]
+    )
+
+    assert beginning_of_sentence(words, FIRST_WORD_INDEX + 5) == FIRST_WORD_INDEX + 4
 
 
 def test_is_repetition():
@@ -91,33 +116,52 @@ def test_is_repetition():
     assert is_repetition("car", "carpet") == False
 
 
-def test_search_backwards():
-    assert search_backwards([], 0, lambda x: True) is None
+def test_search_backwards(create_word_list):
+    assert (
+        search_backwards(create_word_list([]), FIRST_WORD_INDEX, lambda x: True) is None
+    )
 
-    words = create_word_list(["First", "Second"], ["TAG1", "TAG2"])
-    assert search_backwards(words, 0, lambda x: True) is None
+    words = create_word_list([("First", "TAG1"), ("Second", "TAG2")])
+    assert search_backwards(words, FIRST_WORD_INDEX, lambda x: True) is None
+
+    words = create_word_list([("Word", "TAG") for _ in range(MAX_LOOKBACK + 1)])
+    assert (
+        search_backwards(words, FIRST_WORD_INDEX, lambda x: x.tag == "NONEXISTENT")
+        is None
+    )
 
     words = create_word_list(
-        ["Word"] * (MAX_LOOKBACK + 1), ["TAG"] * (MAX_LOOKBACK + 1)
+        [("Target", "TARGET"), ("A", "TAG"), ("B", "TAG"), ("C", "TAG"), ("D", "TAG")]
     )
     assert (
-        search_backwards(words, MAX_LOOKBACK, lambda x: x.tag == "NONEXISTENT") is None
+        search_backwards(words, FIRST_WORD_INDEX + 4, lambda x: x.tag == "TARGET").token
+        == "Target"
     )
 
     words = create_word_list(
-        ["Target", "A", "B", "C", "D"], ["TARGET", "TAG", "TAG", "TAG", "TAG"]
+        [("A", "TAG"), (".", SENTENCE_END), ("B", "TAG"), ("C", "TAG")]
     )
-    assert search_backwards(words, 4, lambda x: x.tag == "TARGET").token == "Target"
+    assert (
+        search_backwards(words, FIRST_WORD_INDEX + 3, lambda x: x.tag == "TAG").token
+        == "B"
+    )
 
-    words = create_word_list(["A", ".", "B", "C"], ["TAG", SENTENCE_END, "TAG", "TAG"])
-    assert search_backwards(words, 3, lambda x: x.tag == "TAG").token == "B"
+    words = create_word_list([("A", "TAG"), ("B", "TAG"), ("Target", "TARGET")])
+    assert (
+        search_backwards(words, FIRST_WORD_INDEX + 2, lambda x: x.tag == "TAG").token
+        == "B"
+    )
 
-    words = create_word_list(["A", "B", "Target"], ["TAG", "TAG", "TARGET"])
-    assert search_backwards(words, 2, lambda x: x.tag == "TAG").token == "B"
+    words = create_word_list(
+        [("A", "TAG"), ("B", "TAG"), ("Target", "TAG"), ("C", "TAG"), ("D", "TAG")]
+    )
+    assert (
+        search_backwards(
+            words, FIRST_WORD_INDEX + 4, lambda x: x.token == "Target"
+        ).token
+        == "Target"
+    )
 
-    words = create_word_list(["A", "B", "Target", "C", "D"], ["TAG"] * 5)
-    assert search_backwards(words, 4, lambda x: x.token == "Target").token == "Target"
-
-    words = create_word_list(["A", "B", "C"], ["TAG"] * 3)
+    words = create_word_list([("A", "TAG"), ("B", "TAG"), ("C", "TAG")])
     with pytest.raises(IndexError):
-        search_backwards(words, 10, lambda x: True)
+        search_backwards(words, FIRST_WORD_INDEX + 10, lambda x: True)

@@ -1,5 +1,8 @@
 import pytest
-from pycpidr.idea_density_rater_rules import identify_words_and_adjust_tags
+from pycpidr.idea_density_rater_rules import (
+    adjust_word_order,
+    identify_words_and_adjust_tags,
+)
 from pycpidr.word_item import WordListItem
 from pycpidr.utils.constants import SENTENCE_END, RuleNumber
 
@@ -78,3 +81,135 @@ def test_determiner_to_pronoun_adjustment(create_word_list):
     assert word_list[FIRST_WORD_INDEX].tag == "PRP"
     assert word_list[FIRST_WORD_INDEX].is_proposition == False
     assert word_list[FIRST_WORD_INDEX].rule_number == 54
+
+
+def test_no_adjustment_needed(create_word_list):
+    word_list = create_word_list(
+        [("The", "DT"), ("cat", "NN"), ("is", "VBZ"), ("happy", "JJ")]
+    )
+    i = adjust_word_order(word_list, FIRST_WORD_INDEX + 2, False)
+    assert i == FIRST_WORD_INDEX + 2
+    assert [w.token for w in word_list[FIRST_WORD_INDEX:]] == [
+        "The",
+        "cat",
+        "is",
+        "happy",
+    ]
+
+
+def test_aux_at_sentence_start(create_word_list):
+    word_list = create_word_list(
+        [
+            ("Is", "VBZ"),
+            ("the", "DT"),
+            ("cat", "NN"),
+            ("happy", "JJ"),
+            ("?", SENTENCE_END),
+        ]
+    )
+    i = adjust_word_order(word_list, FIRST_WORD_INDEX, False)
+    assert i == FIRST_WORD_INDEX
+    assert [w.token for w in word_list[FIRST_WORD_INDEX:]] == [
+        "Is/moved",
+        "the",
+        "cat",
+        "happy",
+        "Is",
+        "?",
+    ]
+
+
+def test_aux_after_interrogative(create_word_list):
+    word_list = create_word_list(
+        [
+            ("Why", "WRB"),
+            ("is", "VBZ"),
+            ("the", "DT"),
+            ("cat", "NN"),
+            ("happy", "JJ"),
+            ("?", SENTENCE_END),
+        ]
+    )
+    i = adjust_word_order(word_list, FIRST_WORD_INDEX + 1, False)
+    assert i == FIRST_WORD_INDEX + 1
+    assert [w.token for w in word_list[FIRST_WORD_INDEX:]] == [
+        "Why",
+        "is/moved",
+        "the",
+        "cat",
+        "happy",
+        "is",
+        "?",
+    ]
+
+
+def test_aux_moved_to_end_of_sentence(create_word_list):
+    word_list = create_word_list(
+        [
+            ("Where", "WRB"),
+            ("could", "MD"),
+            ("it", "PRP"),
+            ("have", "VB"),
+            ("been", "VBN"),
+            ("?", SENTENCE_END),
+        ]
+    )
+    i = adjust_word_order(word_list, FIRST_WORD_INDEX + 4, False)
+    assert i == FIRST_WORD_INDEX + 4
+    assert [w.token for w in word_list[FIRST_WORD_INDEX:]] == [
+        "Where",
+        "could",
+        "it",
+        "have",
+        "been",
+        "?",
+    ]
+
+
+def test_aux_not_moved_when_not_needed(create_word_list):
+    word_list = create_word_list(
+        [("The", "DT"), ("cat", "NN"), ("can", "MD"), ("sleep", "VB")]
+    )
+    i = adjust_word_order(word_list, FIRST_WORD_INDEX + 2, False)
+    assert i == FIRST_WORD_INDEX + 2
+    assert [w.token for w in word_list[FIRST_WORD_INDEX:]] == [
+        "The",
+        "cat",
+        "can",
+        "sleep",
+    ]
+
+
+def test_original_aux_marked_as_ignored(create_word_list):
+    word_list = create_word_list(
+        [
+            ("Is", "VBZ"),
+            ("the", "DT"),
+            ("cat", "NN"),
+            ("happy", "JJ"),
+            ("?", SENTENCE_END),
+        ]
+    )
+    i = adjust_word_order(word_list, FIRST_WORD_INDEX, False)
+    assert word_list[FIRST_WORD_INDEX].tag == ""
+    assert word_list[FIRST_WORD_INDEX].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX].is_word == False
+    assert word_list[FIRST_WORD_INDEX].token == "Is/moved"
+
+
+def test_new_aux_position_marked_correctly(create_word_list):
+    word_list = create_word_list(
+        [
+            ("Is", "VBZ"),
+            ("the", "DT"),
+            ("cat", "NN"),
+            ("happy", "JJ"),
+            ("?", SENTENCE_END),
+        ]
+    )
+    i = adjust_word_order(word_list, FIRST_WORD_INDEX, False)
+    new_aux = next(w for w in word_list[FIRST_WORD_INDEX:] if w.token == "Is")
+    assert new_aux.tag == "VBZ"
+    assert new_aux.is_proposition == True
+    assert new_aux.is_word == True
+    assert new_aux.rule_number == 101

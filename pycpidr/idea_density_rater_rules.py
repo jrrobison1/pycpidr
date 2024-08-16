@@ -170,6 +170,12 @@ def identify_words_and_adjust_tags(
     return i
 
 
+def _should_move_auxiliary_verb(word_list: List[WordListItem], i: int) -> bool:
+    if word_list[i].lowercase_token in AUXILIARY_VERBS:
+        sentence_start = beginning_of_sentence(word_list, i)
+        return sentence_start == i or word_list[sentence_start].tag in INTERROGATIVES
+
+
 def adjust_word_order(word_list: List[WordListItem], i: int, speech_mode: bool) -> int:
     """
     Adjust word order for subject-auxiliary inversion in questions.
@@ -202,28 +208,35 @@ def adjust_word_order(word_list: List[WordListItem], i: int, speech_mode: bool) 
     #   - At the end of the sentence.
     # Note: In some cases this may move a word too far right,
     # but the effect on proposition counting is benign.
-    if word.lowercase_token in AUXILIARY_VERBS:
-        sentence_start = beginning_of_sentence(word_list, i)
-        if sentence_start == i or word_list[sentence_start].tag in INTERROGATIVES:
-            # find out where to move to
-            target_position = i + 1
-            while target_position < len(word_list):
-                if (
-                    word_list[target_position].tag == SENTENCE_END
-                    or word_list[target_position].tag in VERBS
-                ):
-                    break
-                target_position += 1
+    # 101
+    # Subject-Aux inversion
+    # If the current word is an Aux,
+    # and the current word is the first word of the sentence
+    # or the sentence begins with an interrogative,
+    # move the current word rightward to put it in front
+    # of the first verb, or the end of the sentence.
+    # In some cases this will move a word too far to the right,
+    # but the effect on proposition counting is benign.
+    if _should_move_auxiliary_verb(word_list, i):
+        # find out where to move to
+        target_position = i + 1
+        while target_position < len(word_list):
+            if (
+                word_list[target_position].tag == SENTENCE_END
+                or word_list[target_position].tag in VERBS
+            ):
+                break
+            target_position += 1
 
-            if target_position > i + 1:
-                word_list.insert(
-                    target_position, WordListItem(word.token, word.tag, True, True, 101)
-                )
-                # mark the old item as to be ignored
-                word.tag = ""
-                word.is_proposition = False
-                word.is_word = False
-                word.token += "/moved"
+        if target_position > i + 1:
+            word_list.insert(
+                target_position, WordListItem(word.token, word.tag, True, True, 101)
+            )
+            # mark the old item as to be ignored
+            word.tag = ""
+            word.is_proposition = False
+            word.is_word = False
+            word.token += "/moved"
 
     return i
 

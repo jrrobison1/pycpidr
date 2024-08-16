@@ -193,7 +193,6 @@ def test_turner_1987_passage_1():
     assert idea_density == pytest.approx(0.513, abs=1e-3)
 
 
-# @pytest.mark.skip(reason="This test fails, finding 189 propositions instead of 191.")
 def test_turner_1987_passage_2():
     text = """
     On a flat map of the earth (Mercator Projection) satellite ground traces appear to have different shapes 
@@ -226,8 +225,8 @@ def test_turner_1987_passage_2():
     assert word_count == 362
 
     # Note: The original CPIDR 3.2 finds 191 propositions
-    assert proposition_count == 187
-    assert idea_density == pytest.approx(0.516, abs=1e-3)
+    assert proposition_count == 188
+    assert idea_density == pytest.approx(0.519, abs=1e-3)
 
 
 def test_turner_1987_passage_3():

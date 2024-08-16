@@ -3,7 +3,7 @@ from typing import Callable, List
 
 from pycpidr.utils.constants import *
 from pycpidr.utils.word_search_utils import (
-    is_beginning_of_sentence,
+    beginning_of_sentence,
     is_repetition,
     search_backwards,
 )
@@ -203,7 +203,7 @@ def adjust_word_order(word_list: List[WordListItem], i: int, speech_mode: bool) 
     # Note: In some cases this may move a word too far right,
     # but the effect on proposition counting is benign.
     if word.lowercase_token in AUXILIARY_VERBS:
-        sentence_start = is_beginning_of_sentence(word_list, i)
+        sentence_start = beginning_of_sentence(word_list, i)
         if sentence_start == i or word_list[sentence_start].tag in INTERROGATIVES:
             # find out where to move to
             target_position = i + 1
@@ -627,7 +627,7 @@ def handle_fillers(word_list: List[WordListItem], i: int, speech_mode: bool) -> 
     # 610
     # A sentence consisting entirely of probable filler words is propositionless
     if speech_mode and word.tag == SENTENCE_END:
-        bos = is_beginning_of_sentence(word_list, i)
+        bos = beginning_of_sentence(word_list, i)
         k = 0
         for j in range(bos, i):
             if word_list[j].tag != "UH" and word_list[j].lowercase_token not in FILLER:

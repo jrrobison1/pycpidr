@@ -6,21 +6,28 @@ from pycpidr.utils.constants import SENTENCE_END
 MAX_LOOKBACK = 10
 
 
-def is_beginning_of_sentence(word_list_item: WordListItem, i: int) -> int:
+def beginning_of_sentence(word_list_items: List[WordListItem], i: int) -> int:
     """
     Finds the index of the beginning of the sentence containing the word at index i.
 
     Args:
-        word_list_item (WordListItem): The list of word items to search through.
+        word_list_items (List[WordListItem]): The list of word items to search through.
         i (int): The index of the current word.
 
     Returns:
         int: The index of the beginning of the sentence, or 0 if not found.
     """
+    if i == 0 or not word_list_items:
+        return 0
+
     j = i - 1
-    while (j > 0) and (word_list_item[j].tag != SENTENCE_END) and (word_list_item[j].tag != ""):
+    while (
+        (j > 0)
+        and (word_list_items[j].tag != SENTENCE_END)
+        and (word_list_items[j].tag != "")
+    ):
         j -= 1
-    return j
+    return j + 1 if word_list_items[j].tag == SENTENCE_END else 0
 
 
 def is_repetition(first: str, second: str) -> bool:
@@ -39,7 +46,9 @@ def is_repetition(first: str, second: str) -> bool:
     return False
 
 
-def search_backwards(word_list: List[WordListItem], i: int, condition: Callable[[WordListItem], bool]) -> Optional[WordListItem]:
+def search_backwards(
+    word_list: List[WordListItem], i: int, condition: Callable[[WordListItem], bool]
+) -> Optional[WordListItem]:
     """
     Search backwards in the word list for an item that satisfies the given condition.
 

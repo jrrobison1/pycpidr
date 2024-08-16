@@ -40,6 +40,8 @@ class WordList:
         items (List[WordListItem]): The list of WordListItems.
     """
 
+    DEFAULT_ITEM_COUNT = 10
+
     def __init__(self, tagged_text: List[Tuple[str, str]]):
         """
         Initializes a WordList from tagged text.
@@ -47,10 +49,10 @@ class WordList:
         Args:
             tagged_text (List[Tuple[str, str]]): A list of (word, tag) tuples.
 
-        If tagged_text is empty, initializes with 10 empty WordListItems.
+        If tagged_text is empty, initializes with DEFAULT_ITEM_COUNT empty WordListItems.
         Otherwise, creates a WordListItem for each word in the tagged text.
         """
-        self.items = [WordListItem()] * 10
+        self.items = [WordListItem()] * self.DEFAULT_ITEM_COUNT
         for tagged_word in tagged_text:
             self.items.append(
                 WordListItem(tagged_word[0], tagged_word[1], False, False, 0)

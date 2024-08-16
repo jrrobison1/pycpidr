@@ -4,6 +4,7 @@ from pycpidr.idea_density_rater_rules import (
     identify_words_and_adjust_tags,
     identify_potential_propositions,
     handle_linking_verbs,
+    handle_auxiliary_verbs,
 )
 from pycpidr.word_item import WordListItem
 from pycpidr.utils.constants import (
@@ -17,6 +18,7 @@ from pycpidr.utils.constants import (
     ADJECTIVES,
     ADVERBS,
     CAUSATIVE_LINKING_VERBS,
+    AUXILIARY_VERBS,
 )
 
 NUMBER_OF_BLANK_WORD_ITEMS = 10
@@ -389,3 +391,63 @@ def test_rule_310_with_predeterminer(create_word_list):
     assert word_list[FIRST_WORD_INDEX].rule_number == 310
     assert word_list[FIRST_WORD_INDEX + 1].is_proposition == True
     assert word_list[FIRST_WORD_INDEX + 1].rule_number == 310
+
+
+def test_rule_401_aux_not(create_word_list):
+    word_list = create_word_list([("is", "VBZ"), ("not", "RB")])
+    handle_auxiliary_verbs(word_list, FIRST_WORD_INDEX + 1, False)
+    assert word_list[FIRST_WORD_INDEX].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX].rule_number == 401
+
+
+def test_rule_402_aux_verb(create_word_list):
+    word_list = create_word_list([("has", "VBZ"), ("gone", "VBN")])
+    handle_auxiliary_verbs(word_list, FIRST_WORD_INDEX + 1, False)
+    assert word_list[FIRST_WORD_INDEX].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX].rule_number == 402
+
+
+def test_rule_405_aux_not_verb(create_word_list):
+    word_list = create_word_list([("has", "VBZ"), ("not", "NOT"), ("gone", "VBN")])
+    handle_auxiliary_verbs(word_list, FIRST_WORD_INDEX + 2, False)
+    assert word_list[FIRST_WORD_INDEX].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX].rule_number == 405
+
+
+def test_rule_405_aux_adverb_verb(create_word_list):
+    word_list = create_word_list([("had", "VBD"), ("always", "RB"), ("sung", "VBN")])
+    handle_auxiliary_verbs(word_list, FIRST_WORD_INDEX + 2, False)
+    assert word_list[FIRST_WORD_INDEX].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX].rule_number == 405
+
+
+def test_no_rule_applied(create_word_list):
+    word_list = create_word_list([("cat", "NN"), ("runs", "VBZ")])
+    handle_auxiliary_verbs(word_list, FIRST_WORD_INDEX + 1, False)
+    assert word_list[FIRST_WORD_INDEX].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX].rule_number == 0
+    assert word_list[FIRST_WORD_INDEX + 1].is_proposition == False
+    assert word_list[1].rule_number == 0
+
+
+def test_rule_401_case_insensitive(create_word_list):
+    word_list = create_word_list([("Is", "VBZ"), ("NOT", "RB")])
+    handle_auxiliary_verbs(word_list, FIRST_WORD_INDEX + 1, False)
+    assert word_list[FIRST_WORD_INDEX].is_proposition == False
+    assert word_list[FIRST_WORD_INDEX].rule_number == 401
+
+
+def test_rule_402_with_different_verb_tags(create_word_list):
+    for verb_tag in VERBS:
+        word_list = create_word_list([("have", "VB"), ("run", verb_tag)])
+        handle_auxiliary_verbs(word_list, FIRST_WORD_INDEX + 1, False)
+        assert word_list[FIRST_WORD_INDEX].is_proposition == False
+        assert word_list[FIRST_WORD_INDEX].rule_number == 402
+
+
+def test_rule_405_with_different_adverbs(create_word_list):
+    for adverb in ["quickly", "slowly", "carefully"]:
+        word_list = create_word_list([("has", "VBZ"), (adverb, "RB"), ("gone", "VBN")])
+        handle_auxiliary_verbs(word_list, FIRST_WORD_INDEX + 2, False)
+        assert word_list[FIRST_WORD_INDEX].is_proposition == False
+        assert word_list[FIRST_WORD_INDEX].rule_number == 405

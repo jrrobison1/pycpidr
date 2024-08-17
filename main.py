@@ -9,7 +9,7 @@ def main(text, speech_mode):
     print("Word list:")
     for word in word_list.items:
         print(
-            f"Token: [{word.token}], tag: [{word.tag}], is_word: [{word.is_word}], is_prop: [{word.is_prop}], rule_number: [{word.rule_number}]"
+            f"Token: [{word.token}], tag: [{word.tag}], is_word: [{word.is_word}], is_prop: [{word.is_proposition}], rule_number: [{word.rule_number}]"
         )
 
 

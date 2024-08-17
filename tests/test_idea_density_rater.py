@@ -33,7 +33,9 @@ except OSError:
 def test_turner_greene_sentence_1():
     sentence = "Louise and Ann went to the movies last night."
 
-    word_count, proposition_count, idea_density, word_list = rate_text(sentence, nlp)
+    word_count, proposition_count, idea_density, word_list = rate_text(
+        sentence, speech_mode=False
+    )
 
     assert word_count == 9
     assert proposition_count == 4
@@ -43,7 +45,9 @@ def test_turner_greene_sentence_1():
 def test_turner_greene_sentence_2():
     sentence = "They met Charlie there."
 
-    word_count, proposition_count, idea_density, word_list = rate_text(sentence, nlp)
+    word_count, proposition_count, idea_density, word_list = rate_text(
+        sentence, speech_mode=False
+    )
 
     assert word_count == 4
     assert proposition_count == 2
@@ -53,7 +57,9 @@ def test_turner_greene_sentence_2():
 def test_turner_greene_sentence_3():
     sentence = "Afterwards they all went for a chocolate sundae, but the ice cream parlor was closed."
 
-    word_count, proposition_count, idea_density, word_list = rate_text(sentence, nlp)
+    word_count, proposition_count, idea_density, word_list = rate_text(
+        sentence, speech_mode=False
+    )
 
     assert word_count == 15
     assert proposition_count == 6
@@ -63,7 +69,9 @@ def test_turner_greene_sentence_3():
 def test_turner_greene_sentence_4():
     sentence = "Three fourths of Australia's sheep are pure Merinos."
 
-    word_count, proposition_count, idea_density, word_list = rate_text(sentence, nlp)
+    word_count, proposition_count, idea_density, word_list = rate_text(
+        sentence, speech_mode=False
+    )
 
     assert word_count == 8
     assert proposition_count == 4
@@ -73,7 +81,9 @@ def test_turner_greene_sentence_4():
 def test_turner_greene_sentence_5():
     sentence = "They are popular because of the large amount of semiarid land."
 
-    word_count, proposition_count, idea_density, word_list = rate_text(sentence, nlp)
+    word_count, proposition_count, idea_density, word_list = rate_text(
+        sentence, speech_mode=False
+    )
 
     assert word_count == 11
     assert proposition_count == 6
@@ -83,7 +93,9 @@ def test_turner_greene_sentence_5():
 def test_turner_greene_sentence_6():
     sentence = "The Merino thrives on the grasses and low bushes which grow on semiarid plains."
 
-    word_count, proposition_count, idea_density, word_list = rate_text(sentence, nlp)
+    word_count, proposition_count, idea_density, word_list = rate_text(
+        sentence, speech_mode=False
+    )
 
     assert word_count == 14
     assert proposition_count == 8
@@ -93,7 +105,9 @@ def test_turner_greene_sentence_6():
 def test_turner_greene_sentence_7():
     sentence = "They are known for their heavy fleeces of fine-quality wool which bring a high price from textile manufacturers."
 
-    word_count, proposition_count, idea_density, word_list = rate_text(sentence, nlp)
+    word_count, proposition_count, idea_density, word_list = rate_text(
+        sentence, speech_mode=False
+    )
 
     assert word_count == 19
 
@@ -105,7 +119,9 @@ def test_turner_greene_sentence_7():
 def test_turner_greene_sentence_8():
     sentence = "...I unbolted the door and went out."
 
-    word_count, proposition_count, idea_density, word_list = rate_text(sentence, nlp)
+    word_count, proposition_count, idea_density, word_list = rate_text(
+        sentence, speech_mode=False
+    )
 
     assert word_count == 7
 
@@ -118,7 +134,9 @@ def test_turner_greene_sentence_8():
 def test_turner_greene_sentence_9():
     sentence = "It was cool outside in the early morning, and the sun had not yet dried the dew that had come when the wind died down."
 
-    word_count, proposition_count, idea_density, word_list = rate_text(sentence, nlp)
+    word_count, proposition_count, idea_density, word_list = rate_text(
+        sentence, speech_mode=False
+    )
 
     assert word_count == 25
     assert proposition_count == 10
@@ -128,7 +146,9 @@ def test_turner_greene_sentence_9():
 def test_turner_greene_sentence_10():
     sentence = "I hunted around in the shed behind the inn and found a sort of mattock, and went down toward the stream to try and dig some worms for bait."
 
-    word_count, proposition_count, idea_density, word_list = rate_text(sentence, nlp)
+    word_count, proposition_count, idea_density, word_list = rate_text(
+        sentence, speech_mode=False
+    )
 
     assert word_count == 29
     assert proposition_count == 16
@@ -138,7 +158,9 @@ def test_turner_greene_sentence_10():
 def test_turner_greene_sentence_11():
     sentence = "The stream was clear and shallow but it did not look trouty."
 
-    word_count, proposition_count, idea_density, word_list = rate_text(sentence, nlp)
+    word_count, proposition_count, idea_density, word_list = rate_text(
+        sentence, speech_mode=False
+    )
 
     assert word_count == 12
     assert proposition_count == 6
@@ -148,7 +170,9 @@ def test_turner_greene_sentence_11():
 def test_turner_greene_sentence_12():
     sentence = "On the grassy bank where it was damp, I drove the mattock into the earth and loosened a chunk of sod."
 
-    word_count, proposition_count, idea_density, word_list = rate_text(sentence, nlp)
+    word_count, proposition_count, idea_density, word_list = rate_text(
+        sentence, speech_mode=False
+    )
 
     assert word_count == 21
 
@@ -160,7 +184,9 @@ def test_turner_greene_sentence_12():
 def test_turner_greene_sentence_13():
     sentence = "There were worms underneath."
 
-    word_count, proposition_count, idea_density, word_list = rate_text(sentence, nlp)
+    word_count, proposition_count, idea_density, word_list = rate_text(
+        sentence, speech_mode=False
+    )
 
     assert word_count == 4
     assert proposition_count == 2
@@ -170,7 +196,9 @@ def test_turner_greene_sentence_13():
 def test_turner_greene_sentence_14():
     sentence = "They slid out of sight as I lifted the sod and I dug carefully and got a good many."
 
-    word_count, proposition_count, idea_density, word_list = rate_text(sentence, nlp)
+    word_count, proposition_count, idea_density, word_list = rate_text(
+        sentence, speech_mode=False
+    )
 
     assert word_count == 19
     assert proposition_count == 12
@@ -186,7 +214,9 @@ def test_turner_1987_passage_1():
     after his mother prayed ardently to John Newmann.
     """
 
-    word_count, proposition_count, idea_density, word_list = rate_text(text, nlp)
+    word_count, proposition_count, idea_density, word_list = rate_text(
+        text, speech_mode=False
+    )
 
     assert word_count == 78
     assert proposition_count == 40
@@ -219,13 +249,14 @@ def test_turner_1987_passage_2():
     preceding track. This phenomena is referred to as "regression of the nodes."
     """
 
-    word_count, proposition_count, idea_density, word_list = rate_text(text, nlp)
+    word_count, proposition_count, idea_density, word_list = rate_text(
+        text, speech_mode=False
+    )
 
-    # Note: The original CPIDR 3.2 finds 366 words
-    assert word_count == 362
+    assert word_count == 366
 
     # Note: The original CPIDR 3.2 finds 191 propositions
-    assert proposition_count == 188
+    assert proposition_count == 190
     assert idea_density == pytest.approx(0.519, abs=1e-3)
 
 
@@ -247,17 +278,21 @@ def test_turner_1987_passage_3():
     into one large continent partially flooded by shallow seas. 
     """
 
-    word_count, proposition_count, idea_density, word_list = rate_text(text, nlp)
+    word_count, proposition_count, idea_density, word_list = rate_text(
+        text, speech_mode=False
+    )
 
     assert word_count == 210
-    assert proposition_count == 105
-    assert idea_density == pytest.approx(0.5, abs=1e-3)
+    assert proposition_count == 106
+    assert idea_density == pytest.approx(0.505, abs=1e-3)
 
 
 def test_empty_text():
     text = ""
 
-    word_count, proposition_count, idea_density, word_list = rate_text(text, nlp)
+    word_count, proposition_count, idea_density, word_list = rate_text(
+        text, speech_mode=False
+    )
 
     assert word_count == 0
     assert proposition_count == 0
@@ -267,7 +302,9 @@ def test_empty_text():
 def test_none_text():
     text = None
 
-    word_count, proposition_count, idea_density, word_list = rate_text(text, nlp)
+    word_count, proposition_count, idea_density, word_list = rate_text(
+        text, speech_mode=False
+    )
 
     assert word_count == 0
     assert proposition_count == 0
@@ -277,7 +314,9 @@ def test_none_text():
 def test_two_numbers():
     text = "This is 1 2 a sentence with numbers."
 
-    word_count, proposition_count, idea_density, word_list = rate_text(text, nlp)
+    word_count, proposition_count, idea_density, word_list = rate_text(
+        text, speech_mode=False
+    )
 
     assert word_count == 7
     assert proposition_count == 3
@@ -287,7 +326,9 @@ def test_two_numbers():
 def test_one_word():
     text = "Are"
 
-    word_count, proposition_count, idea_density, word_list = rate_text(text, nlp)
+    word_count, proposition_count, idea_density, word_list = rate_text(
+        text, speech_mode=False
+    )
 
     assert word_count == 1
     assert proposition_count == 1
@@ -297,7 +338,9 @@ def test_one_word():
 def test_fraction():
     text = "This is a sentence with 1 / 2 of a fraction."
 
-    word_count, proposition_count, idea_density, word_list = rate_text(text, nlp)
+    word_count, proposition_count, idea_density, word_list = rate_text(
+        text, speech_mode=False
+    )
 
     assert word_count == 9
     assert proposition_count == 4
@@ -307,7 +350,9 @@ def test_fraction():
 def test_one_number():
     text = "4"
 
-    word_count, proposition_count, idea_density, word_list = rate_text(text, nlp)
+    word_count, proposition_count, idea_density, word_list = rate_text(
+        text, speech_mode=False
+    )
 
     assert word_count == 1
     assert proposition_count == 0

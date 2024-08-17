@@ -677,7 +677,9 @@ def handle_fillers(word_list: List[WordListItem], i: int, speech_mode: bool) -> 
     return i
 
 
-def apply_idea_counting_rules(word_list: List[WordListItem], speech_mode: bool) -> None:
+def apply_idea_counting_rules(
+    word_list: List[WordListItem], speech_mode: bool = False
+) -> None:
     """
     This loop iterates through the WordList and may add and remove items.
 

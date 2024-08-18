@@ -22,8 +22,8 @@ Python library for computing propositional idea density.
 ## Introduction
 
 pycpidr is a Python library which determines the propositional idea density of an English text automatically. This project aims to make this functionality more accessible to Python developers and researchers. pycpidr provides two ways of computing idea density:
-- CPIDR. The CPIDR implementation in pycpidr is a direct port of the Computerized Propositional Idea Density Rater (CPIDR) 3.2 (Brown et al 2008)[^1]
-- DEPID. This library implements the DEPID algorithm described by Sirts et al (2017)[^2]
+- CPIDR. The CPIDR implementation in pycpidr is a direct port of the Computerized Propositional Idea Density Rater (CPIDR) 3.2 (Brown et al., 2008)[^1]
+- DEPID. This library implements the DEPID algorithm described by (Sirts et al., 2017)[^2]
 
 Here's a quick example of how to use pycpidr:
 ```python
@@ -105,7 +105,7 @@ for dep in dependencies:
 ```
 
 #### Using custom filters
-pycpidr DEPID mode supports custom filtering of sentences and tokens. By default, pycpidr uses filters described by Sirts et al (2017):
+pycpidr DEPID mode supports custom filtering of sentences and tokens. By default, pycpidr uses filters described by (Sirts et al., 2017):
 - Sentence filter. 
     - Filter out sentences with "I" or "You" as the subject of the sentence (i.e. if the "I" or "You" token dependency is "nsubj" and it's head dependency is the root). 
     - Note: Sirts et al (2017) also filters out vague sentences using SpeciTeller. That is a filter which pycpidr does not yet implement.

@@ -22,8 +22,8 @@ Python library for computing propositional idea density.
 ## Introduction
 
 pycpidr is a Python library which determines the propositional idea density of an English text automatically. This project aims to make this functionality more accessible to Python developers and researchers. pycpidr provides two ways of computing idea density:
-- CPIDR. The CPIDR implementation in pycpidr is a direct port of the Computerized Propositional Idea Density Rater (CPIDR) 3.2 (Brown et al., 2008)[^1]
-- DEPID. This library implements the DEPID algorithm described by (Sirts et al., 2017)[^2]
+- CPIDR. The CPIDR implementation in pycpidr is a direct port of the Computerized Propositional Idea Density Rater (CPIDR) 3.2 (Brown et al., 2008) [1]
+- DEPID. This library implements the DEPID algorithm described by (Sirts et al., 2017) [2]
 
 Here's a quick example of how to use pycpidr:
 ```python

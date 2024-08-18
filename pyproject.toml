@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pycpidr"
-version = "0.2.0"
+version = "0.3.0"
 description = "Python library for computing propositional idea density"
 authors = ["Jason Robison <jrrobison@protonmail.com>"]
 readme = "README.md"

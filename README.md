@@ -135,8 +135,8 @@ def custom_token_filter(token):
     return token.pos_ != "DET"
 text_with_filters = "I run. The quick brown fox jumps over the lazy dog."
 density, word_count, dependencies = depid(text_with_filters,
-sentence_filters=[custom_sentence_filter],
-token_filters=[custom_token_filter])
+custom_sentence_filters=[custom_sentence_filter],
+custom_token_filters=[custom_token_filter])
 print(f"\nWith custom filters - Idea density: {density:.3f}")
 ```
 
@@ -179,7 +179,7 @@ For more information about the original CPIDR 3.2, please visit [CASPR's officia
 ## Citing
 If you use this project in your research, you may cite it as: 
 
-Jason Robison. (2024). *pycpidr* (0.2.0) [Source code]. GitHub. https://github.com/jrrobison1/pycpidr
+Jason Robison. (2024). *pycpidr* (0.3.0) [Source code]. GitHub. https://github.com/jrrobison1/pycpidr
 
 
 ## Contributing

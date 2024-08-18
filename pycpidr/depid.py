@@ -2,7 +2,30 @@ from typing import Callable, List, Optional, Set, Tuple
 
 import spacy
 
-PROPOSITION_DEPENDENCIES = frozenset(["advcl", "advmod", "amod", "appos", "cc", "csubj", "csubjpass", "det", "neg", "npadvmod", "nsubj", "nsubjpass", "nummod", "poss", "predet", "preconj", "prep", "quantmod", "tmod", "vmod"])
+PROPOSITION_DEPENDENCIES = frozenset(
+    [
+        "advcl",
+        "advmod",
+        "amod",
+        "appos",
+        "cc",
+        "csubj",
+        "csubjpass",
+        "det",
+        "neg",
+        "npadvmod",
+        "nsubj",
+        "nsubjpass",
+        "nummod",
+        "poss",
+        "predet",
+        "preconj",
+        "prep",
+        "quantmod",
+        "tmod",
+        "vmod",
+    ]
+)
 EXCLUDED_DETERMINERS = frozenset(["a", "an", "the"])
 EXCLUDED_NSUBJ = frozenset(["it", "this"])
 
@@ -26,6 +49,7 @@ def get_nlp():
             )
     return _nlp
 
+
 def is_i_you_subject(sent: spacy.tokens.Span) -> bool:
     """
     Check if the sentence contains 'I' or 'you' as the subject of the main verb.
@@ -41,9 +65,14 @@ def is_i_you_subject(sent: spacy.tokens.Span) -> bool:
         bool: False if 'I' or 'you' is the subject of the main verb, True otherwise.
     """
     for token in sent:
-        if token.text.lower() in ["i", "you"] and token.dep_ == "nsubj" and token.head.dep_ == "ROOT":
+        if (
+            token.text.lower() in ["i", "you"]
+            and token.dep_ == "nsubj"
+            and token.head.dep_ == "ROOT"
+        ):
             return False
     return True
+
 
 def is_excluded_determiner(token: spacy.tokens.Token) -> bool:
     """
@@ -82,6 +111,7 @@ def is_excluded_cc(token: spacy.tokens.Token) -> bool:
         return False
     return True
 
+
 def is_excluded_nsubj(token: spacy.tokens.Token) -> bool:
     """
     Check if a token is an excluded nominal subject.
@@ -100,13 +130,22 @@ def is_excluded_nsubj(token: spacy.tokens.Token) -> bool:
         return False
     return True
 
+
 SENTENCE_FILTERS = [is_i_you_subject]
 TOKEN_FILTERS = [is_excluded_determiner, is_excluded_nsubj, is_excluded_cc]
 
-def depid(text: str, 
-          is_depid_r: bool = False, 
-          sentence_filters: Optional[List[Callable[[spacy.tokens.Span], bool]]] = SENTENCE_FILTERS, 
-          token_filters: Optional[List[Callable[[spacy.tokens.Token], bool]]] = TOKEN_FILTERS) -> Tuple[float, int, List[Tuple[str, str, str]]] | Tuple[float, int, Set[Tuple[str, str, str]]]:
+
+def depid(
+    text: str,
+    is_depid_r: bool = False,
+    sentence_filters: Optional[
+        List[Callable[[spacy.tokens.Span], bool]]
+    ] = SENTENCE_FILTERS,
+    token_filters: Optional[List[Callable[[spacy.tokens.Token], bool]]] = TOKEN_FILTERS,
+) -> (
+    Tuple[float, int, List[Tuple[str, str, str]]]
+    | Tuple[float, int, Set[Tuple[str, str, str]]]
+):
     """
     Calculate the idea density of a given text using the DEPID algorithm.
 
@@ -134,26 +173,36 @@ def depid(text: str,
         The function uses spaCy for text processing and applies the specified filters
         to refine the analysis according to the DEPID algorithm.
     """
-    
+
     nlp = get_nlp()
     doc = nlp(text)
 
-    word_count = len([token for token in doc if not token.is_punct and not token.is_space])
+    word_count = len(
+        [token for token in doc if not token.is_punct and not token.is_space]
+    )
 
     if sentence_filters:
-        filtered_sents = [sent for sent in doc.sents if all(filter_func(sent) for filter_func in sentence_filters)]
-        doc = spacy.tokens.Doc(doc.vocab, words=[token.text for sent in filtered_sents for token in sent])
-        doc = nlp(doc)  
-    
+        filtered_sents = [
+            sent
+            for sent in doc.sents
+            if all(filter_func(sent) for filter_func in sentence_filters)
+        ]
+        doc = spacy.tokens.Doc(
+            doc.vocab, words=[token.text for sent in filtered_sents for token in sent]
+        )
+        doc = nlp(doc)
+
     if is_depid_r:
         dependencies = set()
     else:
         dependencies = []
-    
+
     for token in doc:
         if not token.dep_ in PROPOSITION_DEPENDENCIES:
             continue
-        if token_filters and any(not filter_func(token) for filter_func in token_filters):
+        if token_filters and any(
+            not filter_func(token) for filter_func in token_filters
+        ):
             continue
         if is_depid_r:
             dependencies.add((token.text, token.dep_, token.head.text))
@@ -165,7 +214,4 @@ def depid(text: str,
     else:
         density = 0.0
 
-
     return density, word_count, dependencies
-    
-

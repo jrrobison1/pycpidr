@@ -160,8 +160,8 @@ CPIDR 3.2: 436 propositions. 0.515 idea density
 For more information about the original CPIDR 3.2, please visit [CASPR's official page](http://ai1.ai.uga.edu/caspr/).
 
 ## References
-[^1]: Brown, C., Snodgrass, T., Kemper, S. J., Herman, R., & Covington, M. A. (2008). Automatic measurement of propositional idea density from part-of-speech tagging. Behavior research methods, 40(2), 540-545.
-[^2]: Sirts, K., Piguet, O., & Johnson, M. (2017). Idea density for predicting Alzheimer's disease from transcribed speech. arXiv preprint arXiv:1706.04473.
+Brown, C., Snodgrass, T., Kemper, S. J., Herman, R., & Covington, M. A. (2008). Automatic measurement of propositional idea density from part-of-speech tagging. Behavior research methods, 40(2), 540-545.
+Sirts, K., Piguet, O., & Johnson, M. (2017). Idea density for predicting Alzheimer's disease from transcribed speech. arXiv preprint arXiv:1706.04473.
 
 ## Citing
 If you use this project in your research, you may cite it as: 

@@ -7,6 +7,9 @@ from pycpidr.word_item import WordList
 # Create a logger for this module
 logger = logging.getLogger(__name__)
 
+def cpidr(
+    text: str, speech_mode: bool = False) -> Tuple[int, int, float, Optional[WordList]]:
+    return rate_text(text, speech_mode)
 
 def rate_text(
     text: str, speech_mode: bool = False

@@ -342,3 +342,78 @@ def test_is_excluded_cc_with_various_dependencies(mock_token):
         mock_token.dep_ = dep
         result = filter_cc(mock_token)
         assert result == True, f"Expected True for dependency '{dep}'"
+
+
+def test_depid_with_excluded_determiner_filter():
+    text = "The cat sat on the mat."
+    density1, _, deps1 = depid(text, use_excluded_determiner_filter=True)
+    density2, _, deps2 = depid(text, use_excluded_determiner_filter=False)
+
+    assert density1 < density2
+    assert len(deps1) < len(deps2)
+    assert "the" not in [dep[0].lower() for dep in deps1]
+    assert "the" in [dep[0].lower() for dep in deps2]
+
+
+def test_depid_with_excluded_nsubj_filter():
+    text = "It is raining. This is a test."
+    density1, _, deps1 = depid(text, use_excluded_nsubj_filter=True)
+    density2, _, deps2 = depid(text, use_excluded_nsubj_filter=False)
+
+    assert density1 < density2
+    assert len(deps1) < len(deps2)
+    assert "it" not in [dep[0].lower() for dep in deps1]
+    assert "this" not in [dep[0].lower() for dep in deps1]
+    assert "it" in [dep[0].lower() for dep in deps2]
+    assert "this" in [dep[0].lower() for dep in deps2]
+
+
+def test_depid_with_excluded_cc_filter():
+    text = "The cat and the dog are playing."
+    density1, _, deps1 = depid(text, use_excluded_cc_filter=True)
+    density2, _, deps2 = depid(text, use_excluded_cc_filter=False)
+
+    assert density1 < density2
+    assert len(deps1) < len(deps2)
+    assert "and" not in [dep[0].lower() for dep in deps1]
+    assert "and" in [dep[0].lower() for dep in deps2]
+
+
+def test_depid_with_i_you_subject_filter():
+    text = "I am happy. You are smart. She is kind."
+    density1, _, deps1 = depid(text, use_i_you_subject_filter=True)
+    density2, _, deps2 = depid(text, use_i_you_subject_filter=False)
+
+    assert density1 < density2
+    assert len(deps1) < len(deps2)
+    assert "i" not in [dep[0].lower() for dep in deps1]
+    assert "you" not in [dep[0].lower() for dep in deps1]
+    assert "i" in [dep[0].lower() for dep in deps2]
+    assert "you" in [dep[0].lower() for dep in deps2]
+
+
+def test_depid_with_all_filters():
+    text = "The cat and the dog are playing. I am watching them. It is fun."
+    density1, _, deps1 = depid(
+        text,
+        use_excluded_determiner_filter=True,
+        use_excluded_nsubj_filter=True,
+        use_excluded_cc_filter=True,
+        use_i_you_subject_filter=True,
+    )
+    density2, _, deps2 = depid(
+        text,
+        use_excluded_determiner_filter=False,
+        use_excluded_nsubj_filter=False,
+        use_excluded_cc_filter=False,
+        use_i_you_subject_filter=False,
+    )
+
+    assert density1 < density2
+    assert len(deps1) < len(deps2)
+    assert not any(
+        word in [dep[0].lower() for dep in deps1] for word in ["the", "and", "i", "it"]
+    )
+    assert all(
+        word in [dep[0].lower() for dep in deps2] for word in ["the", "and", "i", "it"]
+    )

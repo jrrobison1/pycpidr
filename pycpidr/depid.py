@@ -1,4 +1,4 @@
-from typing import Callable, List, Optional, Tuple
+from typing import Callable, List, Optional, Set, Tuple
 
 import spacy
 
@@ -63,11 +63,30 @@ def is_excluded_determiner(token: spacy.tokens.Token) -> bool:
         return False
     return True
 
+
+def is_excluded_cc(token: spacy.tokens.Token) -> bool:
+    """
+    Check if a token is an excluded coordinating conjunction.
+
+    (Sirts et al. 2017) exclude cc dependencies from the proposition list in their DEPID algorithm.
+    It returns False if the token is a coordinating conjunction ('cc'),
+    and True otherwise.
+
+    Args:
+        token (spacy.tokens.Token): A spaCy token to analyze.
+
+    Returns:
+        bool: False if the token is a coordinating conjunction, True otherwise.
+    """
+    if token.dep_ == "cc":
+        return False
+    return True
+
 def is_excluded_nsubj(token: spacy.tokens.Token) -> bool:
     """
     Check if a token is an excluded nominal subject.
 
-    This function is a token filter used by Sirts et al. (2017) in their DEPID algorithm.
+    This function is a token filter used by (Sirts et al., 2017 in their DEPID algorithm.
     It returns False if the token is a nominal subject ('nsubj') and is in the list of excluded subjects,
     and True otherwise.
 
@@ -82,26 +101,40 @@ def is_excluded_nsubj(token: spacy.tokens.Token) -> bool:
     return True
 
 SENTENCE_FILTERS = [is_i_you_subject]
-TOKEN_FILTERS = [is_excluded_determiner, is_excluded_nsubj]
+TOKEN_FILTERS = [is_excluded_determiner, is_excluded_nsubj, is_excluded_cc]
 
-def depid(text: str, sentence_filters: Optional[List[Callable[[spacy.tokens.Span], bool]]] = SENTENCE_FILTERS, token_filters: Optional[List[Callable[[spacy.tokens.Token], bool]]] = TOKEN_FILTERS) -> Tuple[float, int, List[Tuple[str, str, str]]]:
+def depid(text: str, 
+          is_depid_r: bool = False, 
+          sentence_filters: Optional[List[Callable[[spacy.tokens.Span], bool]]] = SENTENCE_FILTERS, 
+          token_filters: Optional[List[Callable[[spacy.tokens.Token], bool]]] = TOKEN_FILTERS) -> Tuple[float, int, List[Tuple[str, str, str]]] | Tuple[float, int, Set[Tuple[str, str, str]]]:
     """
-    Calculate the idea density of a given text using dependency parsing. Implements the DEPID algorithm 
-    defined in the paper "Idea density for predicting Alzheimer’s disease from transcribed speech"
-    by Kairit Sirts, Olivier Piguet, and Mark Johnson (2017). The one exception is that this function
-    does filter out non-specific sentences. The paper used SpeciTeller to exclude very vague sentences.
+    Calculate the idea density of a given text using the DEPID algorithm.
+
+    This function implements the DEPID (Dependency-based Propositional Idea Density) algorithm
+    as described by Sirts et al. (2017). It processes the input text, applies optional sentence
+    and token filters, and calculates the idea density based on the remaining dependencies.
 
     Args:
         text (str): The input text to analyze.
-        sentence_filters (Optional[List[Callable[[spacy.tokens.Span], bool]]]): A list of functions to filter sentences.
-        token_filters (Optional[List[Callable[[spacy.tokens.Token], bool]]]): A list of functions to filter tokens.
+        is_depid_r (bool, optional): If True, returns dependencies as a set instead of a list.
+            Defaults to False.
+        sentence_filters (Optional[List[Callable[[spacy.tokens.Span], bool]]], optional):
+            A list of functions to filter sentences. Defaults to SENTENCE_FILTERS.
+        token_filters (Optional[List[Callable[[spacy.tokens.Token], bool]]], optional):
+            A list of functions to filter tokens. Defaults to TOKEN_FILTERS.
 
     Returns:
-        Tuple[float, int, List[Tuple[str, str, str]]]: A tuple containing:
-            - density (float): The calculated idea density.
-            - word_count (int): The number of words in the text.
-            - dependencies (List[Tuple[str, str, str]]): A list of dependencies, each represented as (token, dependency, head).
+        Tuple[float, int, List[Tuple[str, str, str]]] | Tuple[float, int, Set[Tuple[str, str, str]]]:
+            A tuple containing:
+            - The calculated idea density (float)
+            - The word count (int)
+            - The list or set of dependencies, each as a tuple (token, dependency, head)
+
+    Note:
+        The function uses spaCy for text processing and applies the specified filters
+        to refine the analysis according to the DEPID algorithm.
     """
+    
     nlp = get_nlp()
     doc = nlp(text)
 
@@ -112,19 +145,26 @@ def depid(text: str, sentence_filters: Optional[List[Callable[[spacy.tokens.Span
         doc = spacy.tokens.Doc(doc.vocab, words=[token.text for sent in filtered_sents for token in sent])
         doc = nlp(doc)  
     
-    dependencies = []
+    if is_depid_r:
+        dependencies = set()
+    else:
+        dependencies = []
     
     for token in doc:
         if not token.dep_ in PROPOSITION_DEPENDENCIES:
             continue
         if token_filters and any(not filter_func(token) for filter_func in token_filters):
             continue
-        dependencies.append((token.text, token.dep_, token.head.text))
+        if is_depid_r:
+            dependencies.add((token.text, token.dep_, token.head.text))
+        else:
+            dependencies.append((token.text, token.dep_, token.head.text))
 
     if word_count > 0:
         density = len(dependencies) / word_count
     else:
         density = 0.0
+
 
     return density, word_count, dependencies
     

@@ -75,6 +75,53 @@ def test_depid_word_count_accuracy():
     density, word_count, dependencies = depid(text)
     assert word_count == 10
 
+def test_depid_with_is_depid_r_true():
+    text = "The cat sat on the mat."
+    density, word_count, dependencies = depid(text, is_depid_r=True)
+    assert isinstance(density, float)
+    assert word_count == 6
+    assert isinstance(dependencies, set)
+    assert len(dependencies) > 0
+
+def test_depid_is_depid_r_true_unique_dependencies():
+    text = "The cat sat on the mat. The cat sat on the mat."
+    density, word_count, dependencies = depid(text, is_depid_r=True)
+    assert len(dependencies) < word_count
+    assert isinstance(dependencies, set)
+    
+    # Check if all elements in the set are unique
+    assert len(dependencies) == len(set(dependencies))
+
+def test_depid_is_depid_r_comparison():
+    text = "The quick brown fox jumps over the lazy dog."
+    density_r, word_count_r, dependencies_r = depid(text, is_depid_r=True)
+    density, word_count, dependencies = depid(text, is_depid_r=False)
+    
+    assert density_r == density
+    assert word_count_r == word_count
+    assert set(dependencies) == dependencies_r
+    assert isinstance(dependencies_r, set)
+    assert isinstance(dependencies, list)
+
+def test_depid_is_depid_r_empty_text():
+    text = ""
+    density, word_count, dependencies = depid(text, is_depid_r=True)
+    assert density == 0.0
+    assert word_count == 0
+    assert isinstance(dependencies, set)
+    assert len(dependencies) == 0
+
+def test_depid_is_depid_r_with_filters():
+    text = "The cat and the dog are playing. I am watching them."
+    density, word_count, dependencies = depid(text, 
+                                              is_depid_r=True,
+                                              sentence_filters=[is_i_you_subject],
+                                              token_filters=[is_excluded_determiner, is_excluded_nsubj])
+    assert isinstance(dependencies, set)
+    assert "the" not in [dep[0] for dep in dependencies]
+    assert "I" not in [dep[0] for dep in dependencies]
+    assert len(dependencies) > 0
+
 
 @pytest.fixture
 def mock_span():

@@ -164,7 +164,8 @@ For more information about the original CPIDR 3.2, please visit [CASPR's officia
 [^2]: Sirts, K., Piguet, O., & Johnson, M. (2017). Idea density for predicting Alzheimer's disease from transcribed speech. arXiv preprint arXiv:1706.04473.
 
 ## Citing
-If you use this project in your research, you may cite is as: 
+If you use this project in your research, you may cite it as: 
+
 Jason Robison. (2024). *pycpidr* (0.2.0) [Source code]. GitHub. https://github.com/jrrobison1/pycpidr
 
 

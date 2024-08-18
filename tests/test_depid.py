@@ -4,7 +4,7 @@ import pytest
 import spacy
 
 from pycpidr.depid import (EXCLUDED_DETERMINERS, EXCLUDED_NSUBJ, depid, is_excluded_determiner, is_excluded_nsubj,
-                           is_i_you_subject)
+                           is_i_you_subject, is_excluded_cc)
 
 
 try:
@@ -266,3 +266,32 @@ def test_is_excluded_nsubj_with_all_excluded_subjects(mock_token):
         mock_token.text = subject
         result = is_excluded_nsubj(mock_token)
         assert result == False
+
+def test_is_excluded_cc_with_cc(mock_token):
+    mock_token.dep_ = "cc"
+    
+    result = is_excluded_cc(mock_token)
+    
+    assert result == False
+
+def test_is_excluded_cc_with_non_cc(mock_token):
+    mock_token.dep_ = "conj"
+    
+    result = is_excluded_cc(mock_token)
+    
+    assert result == True
+
+def test_is_excluded_cc_case_sensitivity(mock_token):
+    mock_token.dep_ = "CC"
+    
+    result = is_excluded_cc(mock_token)
+    
+    assert result == True
+
+def test_is_excluded_cc_with_various_dependencies(mock_token):
+    non_cc_dependencies = ["nsubj", "dobj", "amod", "prep", "pobj"]
+    
+    for dep in non_cc_dependencies:
+        mock_token.dep_ = dep
+        result = is_excluded_cc(mock_token)
+        assert result == True, f"Expected True for dependency '{dep}'"

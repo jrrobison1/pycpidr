@@ -54,7 +54,7 @@ def is_i_you_subject(sent: spacy.tokens.Span) -> bool:
     """
     Check if the sentence contains 'I' or 'you' as the subject of the main verb.
 
-    This function is a sentence filter used by Sirts et al. (2017) in their DEPID algorithm.
+    This function is a sentence filter used by (Sirts et al., 2017) in their DEPID algorithm.
     It returns False if the sentence contains 'I' or 'you' as the subject of the root verb,
     and True otherwise.
 
@@ -78,7 +78,7 @@ def is_excluded_determiner(token: spacy.tokens.Token) -> bool:
     """
     Check if a token is an excluded determiner.
 
-    This function is a token filter used by Sirts et al. (2017) in their DEPID algorithm.
+    This function is a token filter used by (Sirts et al., 2017) in their DEPID algorithm.
     It returns False if the token is a determiner ('det') and is in the list of excluded determiners,
     and True otherwise.
 
@@ -97,7 +97,7 @@ def is_excluded_cc(token: spacy.tokens.Token) -> bool:
     """
     Check if a token is an excluded coordinating conjunction.
 
-    (Sirts et al. 2017) exclude cc dependencies from the proposition list in their DEPID algorithm.
+    (Sirts et al., 2017) exclude cc dependencies from the proposition list in their DEPID algorithm.
     It returns False if the token is a coordinating conjunction ('cc'),
     and True otherwise.
 
@@ -150,7 +150,7 @@ def depid(
     Calculate the idea density of a given text using the DEPID algorithm.
 
     This function implements the DEPID (Dependency-based Propositional Idea Density) algorithm
-    as described by Sirts et al. (2017). It processes the input text, applies optional sentence
+    as described by (Sirts et al., 2017). It processes the input text, applies optional sentence
     and token filters, and calculates the idea density based on the remaining dependencies.
 
     Args:

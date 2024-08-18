@@ -128,10 +128,4 @@ def depid(text: str, sentence_filters: Optional[List[Callable[[spacy.tokens.Span
 
     return density, word_count, dependencies
     
-text = "what else can I tell you about the picture? The picture is black, and the tree is bright green."
-deps = depid(text, sentence_filters=[is_i_you_subject], token_filters=[is_excluded_determiner, is_excluded_nsubj])
 
-density, word_count, dependencies = depid(text, sentence_filters=[is_i_you_subject], token_filters=[is_excluded_determiner, is_excluded_nsubj])
-print(f"Density: {density}")
-print(f"Word count: {word_count}")
-print(f"Dependencies: {dependencies}")

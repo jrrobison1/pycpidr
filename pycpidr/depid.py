@@ -155,8 +155,9 @@ def depid(
 
     Args:
         text (str): The input text to analyze.
-        is_depid_r (bool, optional): If True, returns dependencies as a set instead of a list.
-            Defaults to False.
+        is_depid_r (bool, optional):
+            Counts _distinct_ dependencies. If True, returns dependencies as a set instead
+            of a list. Defaults to False.
         sentence_filters (Optional[List[Callable[[spacy.tokens.Span], bool]]], optional):
             A list of functions to filter sentences. Defaults to SENTENCE_FILTERS.
         token_filters (Optional[List[Callable[[spacy.tokens.Token], bool]]], optional):

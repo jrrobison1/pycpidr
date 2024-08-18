@@ -32,6 +32,7 @@ from pycpidr import cpidr, depid
 text = "The quick brown fox jumps over the lazy dog."
 cpidr_word_count, proposition_count, cpidr_density, word_list = cpidr(text)
 depid_density, depid_word_count, dependencies = depid(text)
+
 print(f"CPIDR density: {cpidr_density}")
 print(f"DEPID density: {depid_density}")
 ```
@@ -62,7 +63,7 @@ python -m spacy download en_core_web_sm
 
 ## Usage
 ### CPIDR
-Here's a simple example of how to use PyCPIDR:
+Here's a simple example of how to use CPIDR:
 
 ```python
 from pycpidr import cpidr
@@ -88,7 +89,7 @@ for word in word_list.items:
 
 #### Speech Mode
 
-PyCPIDR CPIDR mode supports a speech mode that handles common speech patterns and fillers differently from written text. When analyzing transcripts or spoken language, use the `speech_mode=True` parameter for more accurate results.
+pycpidr CPIDR mode supports a speech mode that handles common speech patterns and fillers differently from written text. When analyzing transcripts or spoken language, use the `speech_mode=True` parameter for more accurate results.
 
 ### DEPID
 Here's an example of how to use the DEPID functionality:

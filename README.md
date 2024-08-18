@@ -33,8 +33,8 @@ text = "The quick brown fox jumps over the lazy dog."
 cpidr_word_count, proposition_count, cpidr_density, word_list = cpidr(text)
 depid_density, depid_word_count, dependencies = depid(text)
 
-print(f"CPIDR density: {cpidr_density}")
-print(f"DEPID density: {depid_density}")
+print(f"CPIDR density: {cpidr_density:.3f}")
+print(f"DEPID density: {depid_density:.3f}")
 ```
 
 ## What is Idea Density?
@@ -103,6 +103,18 @@ print(f"Idea density: {density:.3f}")
 print("Dependencies:")
 for dep in dependencies:
     print(f"Token: {dep[0]}, Dependency: {dep[1]}, Head: {dep[2]}")
+```
+
+#### DEPID-R
+DEPID-R counts _distinct_ dependencies.
+
+```python
+from pycpidr import depid
+
+text = "This is a test of DEPID-R. This is a test of DEPID-R"
+density, word_count, dependencies = depid(text, is_depid_r=True)
+
+print(f"DEPID-R idea density: {density:.3f}")
 ```
 
 #### Using custom filters

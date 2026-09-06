@@ -2,10 +2,17 @@ import spacy
 import os
 import sys
 from typing import List, Tuple, Optional
-import pkg_resources
-from pathlib import Path
 
 _nlp = None
+
+# CPIDR only needs part-of-speech tags (token.tag_), so the expensive
+# pipeline components are disabled: this makes tagging several times
+# faster with identical results.
+_DISABLED_COMPONENTS = ["parser", "ner", "lemmatizer", "attribute_ruler"]
+
+
+def _load_model(name_or_path):
+    return spacy.load(name_or_path, disable=_DISABLED_COMPONENTS)
 
 
 def get_nlp():
@@ -20,7 +27,7 @@ def get_nlp():
         try:
             # First try: regular loading
             try:
-                _nlp = spacy.load("en_core_web_sm")
+                _nlp = _load_model("en_core_web_sm")
                 return _nlp
             except OSError:
                 pass  # Continue to other methods
@@ -38,7 +45,7 @@ def get_nlp():
                 ]:
                     if os.path.exists(possible_path):
                         print(f"Found model at: {possible_path}")
-                        _nlp = spacy.load(possible_path)
+                        _nlp = _load_model(possible_path)
                         return _nlp
                         
             # If we got here, we couldn't find the model

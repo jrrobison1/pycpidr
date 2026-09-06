@@ -1,7 +1,11 @@
 import importlib.metadata
-import tomli
 from pathlib import Path
 import spacy
+
+try:  # Python 3.11+
+    import tomllib as tomli
+except ModuleNotFoundError:
+    import tomli
 
 
 def get_version():

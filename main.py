@@ -1,8 +1,12 @@
 import sys
 import argparse
 import os
-import tomli
 import spacy
+
+try:  # Python 3.11+
+    import tomllib as tomli
+except ModuleNotFoundError:
+    import tomli
 from pathlib import Path
 from PyQt6.QtWidgets import (
     QApplication,

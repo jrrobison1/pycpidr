@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ideadensity"
-version = "0.5.1"
+version = "0.6.0"
 description = "Python library for computing propositional idea density"
 authors = ["Jason Robison <jrrobison@protonmail.com>"]
 readme = "README.md"
@@ -14,15 +14,21 @@ classifiers = [
     "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 packages = [{ include = "ideadensity" }]
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.13"
-python-levenshtein = "^0.25.1"
-pyqt6 = "^6.6.1"
+python = ">=3.10,<3.15"
+levenshtein = ">=0.25"
+pyqt6 = { version = "^6.6.1", optional = true }
 spacy = "^3.8.4"
-tomli = "^2.2.1"
+tomli = { version = "^2.2.1", python = "<3.11" }
+
+[tool.poetry.extras]
+gui = ["pyqt6"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.2"

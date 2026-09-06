@@ -62,7 +62,14 @@ poetry add ideadensity
 python -m spacy download en_core_web_sm
 ```
 
-**Note**: This package currently supports Python 3.10-3.12 due to dependency constraints with spaCy and its dependencies. If you're using Python 3.13, you'll need to create a virtual environment with a compatible Python version.
+Python 3.10+ is supported, including 3.13.
+
+The desktop GUI is an optional extra (the plain library no longer installs
+PyQt6):
+
+```bash
+pip install "ideadensity[gui]"
+```
 
 
 ## Usage

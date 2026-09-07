@@ -254,14 +254,37 @@ CPIDR 3.2: 436 propositions. 0.515 idea density
 For more information about the original CPIDR 3.2, please visit [CASPR's official page](http://ai1.ai.uga.edu/caspr/).
 
 ## References
-[1] Brown, C., Snodgrass, T., Kemper, S. J., Herman, R., & Covington, M. A. (2008). Automatic measurement of propositional idea density from part-of-speech tagging. Behavior research methods, 40(2), 540-545.
+[1] Brown, C., Snodgrass, T., Kemper, S. J., Herman, R., & Covington, M. A. (2008). Automatic measurement of propositional idea density from part-of-speech tagging. *Behavior Research Methods, 40*(2), 540-545. https://doi.org/10.3758/BRM.40.2.540
 
-[2] Sirts, K., Piguet, O., & Johnson, M. (2017). Idea density for predicting Alzheimer's disease from transcribed speech. arXiv preprint arXiv:1706.04473.
+[2] Sirts, K., Piguet, O., & Johnson, M. (2017). Idea density for predicting Alzheimer's disease from transcribed speech. In *Proceedings of the 21st Conference on Computational Natural Language Learning (CoNLL 2017)* (pp. 322-332). Association for Computational Linguistics. https://doi.org/10.18653/v1/K17-1033
 
 ## Citing
-If you use this project in your research, you may cite it as: 
 
-Jason Robison. (2024). *ideadensity* (0.2.0) [Source code]. GitHub. https://github.com/jrrobison1/ideadensity
+If you use ideadensity in your research, please cite **both the tool and
+the paper for the method you used**:
+
+- **Always cite the tool** (see [CITATION.cff](CITATION.cff), or use
+  GitHub's "Cite this repository" button):
+
+  > Robison, J. (2026). *ideadensity* (Version 0.6.0) [Computer software].
+  > https://github.com/jrrobison1/ideadensity
+
+- **If you used `cpidr`**, also cite the original CPIDR paper, of which
+  this is a port: Brown et al. (2008) [1].
+- **If you used `depid`**, also cite the paper that introduced the DEPID
+  algorithm: Sirts et al. (2017) [2].
+
+**For reproducibility, report the ideadensity version, the spaCy version,
+and the spaCy model version** — idea-density scores depend on the tagger
+and parser, so the same text can score differently across spaCy releases.
+The library reports all three:
+
+```python
+import ideadensity
+print(ideadensity.reproducibility_info())
+# {'ideadensity': '0.6.0', 'spacy': '3.8.11',
+#  'spacy_model': 'en_core_web_sm', 'spacy_model_version': '3.8.0'}
+```
 
 
 ## Contributing

@@ -1,0 +1,63 @@
+cff-version: 1.2.0
+message: >-
+  If you use ideadensity in your research, please cite the tool (below)
+  and the paper for the method you used: for cpidr, cite Brown et al.
+  (2008), the original CPIDR of which this is a port; for depid, cite
+  Sirts et al. (2017), which introduced the DEPID algorithm. For
+  reproducibility, also report the ideadensity version, spaCy version,
+  and spaCy model version (see ideadensity.reproducibility_info()).
+title: "ideadensity: propositional idea density measurement"
+type: software
+authors:
+  - family-names: Robison
+    given-names: Jason
+version: 0.6.0
+license: GPL-2.0
+repository-code: "https://github.com/jrrobison1/ideadensity"
+url: "https://pypi.org/project/ideadensity/"
+keywords:
+  - idea density
+  - propositional density
+  - CPIDR
+  - DEPID
+  - psycholinguistics
+  - nlp
+references:
+  - type: article
+    title: Automatic measurement of propositional idea density from part-of-speech tagging
+    notes: "Cite when using cpidr: the original CPIDR, of which this library's implementation is a port."
+    authors:
+      - family-names: Brown
+        given-names: Cati
+      - family-names: Snodgrass
+        given-names: Tony
+      - family-names: Kemper
+        given-names: Susan J.
+      - family-names: Herman
+        given-names: Ruth
+      - family-names: Covington
+        given-names: Michael A.
+    journal: Behavior Research Methods
+    volume: 40
+    issue: 2
+    start: 540
+    end: 545
+    year: 2008
+    doi: 10.3758/BRM.40.2.540
+  - type: conference-paper
+    title: Idea density for predicting Alzheimer's disease from transcribed speech
+    notes: "Cite when using depid: the paper that introduced the DEPID algorithm."
+    authors:
+      - family-names: Sirts
+        given-names: Kairit
+      - family-names: Piguet
+        given-names: Olivier
+      - family-names: Johnson
+        given-names: Mark
+    collection-title: Proceedings of the 21st Conference on Computational Natural Language Learning (CoNLL 2017)
+    publisher:
+      name: Association for Computational Linguistics
+    start: 322
+    end: 332
+    year: 2017
+    doi: 10.18653/v1/K17-1033

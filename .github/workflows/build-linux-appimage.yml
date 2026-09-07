@@ -90,10 +90,15 @@ jobs:
           
           # Also create a copy in the root of AppDir as per AppImage requirements
           cp AppDir/usr/share/applications/ideadensity.desktop AppDir/
-          
-          # Convert icon (assuming .ico can be converted to .png using ImageMagick)
-          sudo apt-get install -y imagemagick
-          convert id_icon.ico -resize 256x256 AppDir/usr/share/icons/hicolor/256x256/apps/ideadensity.png
+
+          # Icon: appimagetool requires ideadensity.png BOTH at the AppDir
+          # root (next to the root .desktop file) and in the hicolor theme
+          # path. id_icon.png is committed (256x256, extracted from the
+          # .ico's native 256px frame) so no ImageMagick conversion — whose
+          # multi-frame .ico handling writes ideadensity-0.png, -1.png, ...
+          # instead of a single file — is needed.
+          cp id_icon.png AppDir/ideadensity.png
+          cp id_icon.png AppDir/usr/share/icons/hicolor/256x256/apps/ideadensity.png
           
           # Create AppStream metadata
           cat > AppDir/usr/share/metainfo/ideadensity.appdata.xml << EOF

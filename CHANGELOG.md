@@ -35,3 +35,8 @@
 - New `ideadensity.reproducibility_info()`: returns the ideadensity,
   spaCy, and spaCy-model versions for reporting in a study's methods
   section — scores depend on the tagger/parser, so these matter.
+- Lock file fully regenerated: the previous re-lock had preserved
+  pre-3.13 pins (levenshtein 0.25.1, murmurhash 1.0.12, preshed 3.0.9,
+  cymem 2.0.11) that forced source builds or binary mismatches on
+  Python 3.13; the levenshtein floor is now >=0.26 (first release with
+  3.13 wheels).

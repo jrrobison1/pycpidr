@@ -61,3 +61,27 @@ def get_spacy_version_info():
         model_version = "not loaded"
     
     return spacy_version, model_name, model_version
+
+
+def reproducibility_info() -> dict:
+    """Version information to report alongside published results.
+
+    Idea-density scores depend on the tagger/parser, so reproducing a
+    study's numbers requires the ideadensity version, the spaCy version,
+    and the spaCy model version. Paste this into your methods section:
+
+        >>> import ideadensity
+        >>> ideadensity.reproducibility_info()
+        {'ideadensity': '0.6.0', 'spacy': '3.8.11',
+         'spacy_model': 'en_core_web_sm', 'spacy_model_version': '3.8.0'}
+
+    Returns:
+        dict: ideadensity, spacy, spacy_model, and spacy_model_version.
+    """
+    spacy_version, model_name, model_version = get_spacy_version_info()
+    return {
+        "ideadensity": get_version(),
+        "spacy": spacy_version,
+        "spacy_model": model_name,
+        "spacy_model_version": model_version,
+    }

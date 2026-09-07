@@ -27,3 +27,11 @@
 - Executable build workflows install the `gui` extra (required now that
   PyQt6 is optional), drop the obsolete `tomli` hidden imports (stdlib
   `tomllib` is used on the 3.13 build Python), and build on Python 3.13.
+- **Citation guidance overhauled.** New CITATION.cff (GitHub's cite
+  button now works); the README's Citing section explains what to cite:
+  the tool always, Brown et al. (2008) when using cpidr, Sirts et al.
+  (2017) when using depid. The Sirts reference is corrected from "arXiv
+  preprint" to its published CoNLL 2017 venue, and both papers carry DOIs.
+- New `ideadensity.reproducibility_info()`: returns the ideadensity,
+  spaCy, and spaCy-model versions for reporting in a study's methods
+  section — scores depend on the tagger/parser, so these matter.

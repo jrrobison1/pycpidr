@@ -24,3 +24,6 @@
 - CI now tests Python 3.10–3.13.
 - `tomli` is now only required on Python 3.10 (3.11+ uses the standard
   library's `tomllib`).
+- Executable build workflows install the `gui` extra (required now that
+  PyQt6 is optional), drop the obsolete `tomli` hidden imports (stdlib
+  `tomllib` is used on the 3.13 build Python), and build on Python 3.13.

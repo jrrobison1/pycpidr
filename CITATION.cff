@@ -11,7 +11,7 @@ type: software
 authors:
   - family-names: Robison
     given-names: Jason
-version: 0.6.0
+version: 0.6.2
 license: GPL-2.0
 repository-code: "https://github.com/jrrobison1/ideadensity"
 url: "https://pypi.org/project/ideadensity/"

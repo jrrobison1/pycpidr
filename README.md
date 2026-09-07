@@ -266,7 +266,7 @@ the paper for the method you used**:
 - **Always cite the tool** (see [CITATION.cff](CITATION.cff), or use
   GitHub's "Cite this repository" button):
 
-  > Robison, J. (2026). *ideadensity* (Version 0.6.0) [Computer software].
+  > Robison, J. (2026). *ideadensity* (Version 0.6.2) [Computer software].
   > https://github.com/jrrobison1/ideadensity
 
 - **If you used `cpidr`**, also cite the original CPIDR paper, of which

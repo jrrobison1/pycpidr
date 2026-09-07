@@ -1,10 +1,10 @@
 name: Build Linux AppImage
 
+# Disabled from release tags: this build has never produced a working
+# AppImage. Kept as manual-only (workflow_dispatch) in case it's worth
+# revisiting; macOS and Windows executables cover the download links.
 on:
-  workflow_dispatch:  # Allow manual trigger
-  push:
-    tags:
-      - 'v*'  # Run on version tags
+  workflow_dispatch:  # Allow manual trigger only
 
 permissions:
   contents: write  # This is required for creating releases and uploading assets
